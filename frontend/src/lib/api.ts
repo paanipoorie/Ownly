@@ -2,6 +2,40 @@ import type { User, Asset, TimelineEvent } from './types';
 
 const API_BASE = 'http://localhost:3000/api';
 
+export class APIError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'APIError';
+    this.status = status;
+  }
+}
+
+let globalOnError: ((error: APIError) => void) | null = null;
+
+export function setGlobalErrorHandler(handler: (error: APIError) => void) {
+  globalOnError = handler;
+}
+
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    ...options,
+  });
+  if (!res.ok) {
+    let msg = `request failed with status ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body.error) msg = body.error;
+    } catch {}
+    const err = new APIError(msg, res.status);
+    if (globalOnError) globalOnError(err);
+    throw err;
+  }
+  return res.json();
+}
+
 // Sample mock data for demo mode when user is not authenticated with Go backend
 const INITIAL_MOCK_ASSETS: Asset[] = [
   {
@@ -76,175 +110,166 @@ const INITIAL_MOCK_ASSETS: Asset[] = [
 
 let localAssets: Asset[] = [...INITIAL_MOCK_ASSETS];
 
+async function tryFetch<T>(fn: () => Promise<T>, fallback: () => T): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof APIError && globalOnError) globalOnError(err);
+    return fallback();
+  }
+}
+
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
-    const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
-    if (!res.ok) return null;
-    return await res.json();
+    return await apiFetch<User>('/auth/me');
   } catch {
     return null;
   }
 }
 
 export async function fetchAssets(): Promise<Asset[]> {
-  try {
-    const res = await fetch(`${API_BASE}/assets`, { credentials: 'include' });
-    if (res.ok) {
-      const data = await res.json();
+  return tryFetch(
+    async () => {
+      const data = await apiFetch<Asset[]>('/assets');
       if (Array.isArray(data)) return data;
-    }
-  } catch {
-    // fallback to local assets for offline/demo
-  }
-  return [...localAssets];
+      throw new APIError('invalid response', 500);
+    },
+    () => [...localAssets]
+  );
 }
 
 export async function searchAssets(query: string, category?: string): Promise<Asset[]> {
-  try {
-    const params = new URLSearchParams();
-    if (query) params.append('q', query);
-    if (category) params.append('category', category);
-
-    const res = await fetch(`${API_BASE}/search?${params.toString()}`, { credentials: 'include' });
-    if (res.ok) {
-      const data = await res.json();
+  return tryFetch(
+    async () => {
+      const params = new URLSearchParams();
+      if (query) params.append('q', query);
+      if (category) params.append('category', category);
+      const data = await apiFetch<Asset[]>(`/search?${params.toString()}`);
       if (Array.isArray(data)) return data;
-    }
-  } catch {
-    // fallback
-  }
-
-  return localAssets.filter((item) => {
-    if (query) {
-      const q = query.toLowerCase();
-      const match =
-        item.name?.toLowerCase().includes(q) ||
-        item.merchant?.toLowerCase().includes(q) ||
-        item.invoice_number?.toLowerCase().includes(q) ||
-        item.notes?.toLowerCase().includes(q) ||
-        item.category?.toLowerCase().includes(q);
-      if (!match) return false;
-    }
-    if (category && category !== 'all' && item.category !== category) return false;
-    return true;
-  });
+      throw new APIError('invalid response', 500);
+    },
+    () =>
+      localAssets.filter((item) => {
+        if (query) {
+          const q = query.toLowerCase();
+          const match =
+            item.name?.toLowerCase().includes(q) ||
+            item.merchant?.toLowerCase().includes(q) ||
+            item.invoice_number?.toLowerCase().includes(q) ||
+            item.notes?.toLowerCase().includes(q) ||
+            item.category?.toLowerCase().includes(q);
+          if (!match) return false;
+        }
+        if (category && category !== 'all' && item.category !== category) return false;
+        return true;
+      })
+  );
 }
 
 export async function createAsset(asset: Omit<Asset, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Asset> {
-  try {
-    const res = await fetch(`${API_BASE}/assets`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(asset),
-    });
-    if (res.ok) {
-      return await res.json();
+  return tryFetch(
+    async () => {
+      return apiFetch<Asset>('/assets', {
+        method: 'POST',
+        body: JSON.stringify(asset),
+      });
+    },
+    () => {
+      const newAsset: Asset = {
+        ...asset,
+        id: `local-${Date.now()}`,
+        user_id: 'demo-user',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      localAssets = [newAsset, ...localAssets];
+      return newAsset;
     }
-  } catch {
-    // fallback
-  }
-
-  const newAsset: Asset = {
-    ...asset,
-    id: `local-${Date.now()}`,
-    user_id: 'demo-user',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-  localAssets = [newAsset, ...localAssets];
-  return newAsset;
+  );
 }
 
 export async function updateAsset(id: string, asset: Partial<Asset>): Promise<Asset> {
-  try {
-    const res = await fetch(`${API_BASE}/assets/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(asset),
-    });
-    if (res.ok) {
-      return await res.json();
+  return tryFetch(
+    async () => {
+      return apiFetch<Asset>(`/assets/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(asset),
+      });
+    },
+    () => {
+      localAssets = localAssets.map((item) =>
+        item.id === id ? { ...item, ...asset, updated_at: new Date().toISOString() } : item
+      );
+      return localAssets.find((item) => item.id === id)!;
     }
-  } catch {
-    // fallback
-  }
-
-  localAssets = localAssets.map((item) =>
-    item.id === id ? { ...item, ...asset, updated_at: new Date().toISOString() } : item
   );
-  return localAssets.find((item) => item.id === id)!;
 }
 
 export async function deleteAsset(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/assets/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-    if (res.ok) return true;
-  } catch {
-    // fallback
+    await apiFetch(`/assets/${id}`, { method: 'DELETE' });
+    return true;
+  } catch (err) {
+    if (err instanceof APIError) {
+      if (globalOnError) globalOnError(err);
+      localAssets = localAssets.filter((item) => item.id !== id);
+      return true;
+    }
+    localAssets = localAssets.filter((item) => item.id !== id);
+    return true;
   }
-
-  localAssets = localAssets.filter((item) => item.id !== id);
-  return true;
 }
 
 export async function fetchTimeline(): Promise<TimelineEvent[]> {
-  try {
-    const res = await fetch(`${API_BASE}/timeline`, { credentials: 'include' });
-    if (res.ok) {
-      const data = await res.json();
+  return tryFetch(
+    async () => {
+      const data = await apiFetch<TimelineEvent[]>('/timeline');
       if (Array.isArray(data)) return data;
-    }
-  } catch {
-    // fallback
-  }
-
-  // Generate timeline events from current assets
-  const events: TimelineEvent[] = [];
-  localAssets.forEach((asset) => {
-    if (asset.purchase_date) {
-      events.push({
-        id: `evt-p-${asset.id}`,
-        user_id: asset.user_id,
-        asset_id: asset.id,
-        asset: asset,
-        event_type: 'purchase',
-        title: `Purchased ${asset.name}`,
-        description: `Bought from ${asset.merchant || 'Merchant'} for ${asset.purchase_currency} ${asset.purchase_price.toLocaleString()}`,
-        event_date: asset.purchase_date,
+      throw new APIError('invalid response', 500);
+    },
+    () => {
+      const events: TimelineEvent[] = [];
+      localAssets.forEach((asset) => {
+        if (asset.purchase_date) {
+          events.push({
+            id: `evt-p-${asset.id}`,
+            user_id: asset.user_id,
+            asset_id: asset.id,
+            asset: asset,
+            event_type: 'purchase',
+            title: `Purchased ${asset.name}`,
+            description: `Bought from ${asset.merchant || 'Merchant'} for ${asset.purchase_currency} ${asset.purchase_price.toLocaleString()}`,
+            event_date: asset.purchase_date,
+          });
+        }
+        if (asset.warranty_expiry) {
+          events.push({
+            id: `evt-w-${asset.id}`,
+            user_id: asset.user_id,
+            asset_id: asset.id,
+            asset: asset,
+            event_type: 'warranty',
+            title: `Warranty Expiry: ${asset.name}`,
+            description: `Warranty coverage expires on ${asset.warranty_expiry}`,
+            event_date: asset.warranty_expiry,
+          });
+        }
+        if (asset.exchange_deadline) {
+          events.push({
+            id: `evt-e-${asset.id}`,
+            user_id: asset.user_id,
+            asset_id: asset.id,
+            asset: asset,
+            event_type: 'exchange',
+            title: `Exchange Deadline: ${asset.name}`,
+            description: `Return/Exchange window closes on ${asset.exchange_deadline}`,
+            event_date: asset.exchange_deadline,
+          });
+        }
       });
+      return events.sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
     }
-    if (asset.warranty_expiry) {
-      events.push({
-        id: `evt-w-${asset.id}`,
-        user_id: asset.user_id,
-        asset_id: asset.id,
-        asset: asset,
-        event_type: 'warranty',
-        title: `Warranty Expiry: ${asset.name}`,
-        description: `Warranty coverage expires on ${asset.warranty_expiry}`,
-        event_date: asset.warranty_expiry,
-      });
-    }
-    if (asset.exchange_deadline) {
-      events.push({
-        id: `evt-e-${asset.id}`,
-        user_id: asset.user_id,
-        asset_id: asset.id,
-        asset: asset,
-        event_type: 'exchange',
-        title: `Exchange Deadline: ${asset.name}`,
-        description: `Return/Exchange window closes on ${asset.exchange_deadline}`,
-        event_date: asset.exchange_deadline,
-      });
-    }
-  });
-
-  return events.sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime());
+  );
 }
 
 export async function uploadFile(file: File): Promise<{ url: string; filename: string }> {
@@ -256,17 +281,18 @@ export async function uploadFile(file: File): Promise<{ url: string; filename: s
       credentials: 'include',
       body: formData,
     });
-    if (res.ok) {
-      return await res.json();
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new APIError(body.error || 'upload failed', res.status);
     }
-  } catch {
-    // fallback to object URL
+    return await res.json();
+  } catch (err) {
+    if (err instanceof APIError && globalOnError) globalOnError(err);
+    return {
+      url: URL.createObjectURL(file),
+      filename: file.name,
+    };
   }
-
-  return {
-    url: URL.createObjectURL(file),
-    filename: file.name,
-  };
 }
 
 let localCandidates: any[] = [
@@ -313,126 +339,102 @@ let localCandidates: any[] = [
 ];
 
 export async function fetchImportCandidates(): Promise<any[]> {
-  try {
-    const res = await fetch(`${API_BASE}/imports`, { credentials: 'include' });
-    if (res.ok) {
-      const data = await res.json();
+  return tryFetch(
+    async () => {
+      const data = await apiFetch<any[]>('/imports');
       if (Array.isArray(data)) return data;
-    }
-  } catch {
-    // fallback
-  }
-  return localCandidates.filter((c) => c.status === 'pending');
+      throw new APIError('invalid response', 500);
+    },
+    () => localCandidates.filter((c) => c.status === 'pending')
+  );
 }
 
 export async function scanGmailInbox(): Promise<any[]> {
-  try {
-    const res = await fetch(`${API_BASE}/imports/scan`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const data = await res.json();
+  return tryFetch(
+    async () => {
+      const data = await apiFetch<any[]>('/imports/scan', { method: 'POST' });
       if (Array.isArray(data)) return data;
-    }
-  } catch {
-    // fallback
-  }
-  return localCandidates.filter((c) => c.status === 'pending');
+      throw new APIError('invalid response', 500);
+    },
+    () => localCandidates.filter((c) => c.status === 'pending')
+  );
 }
 
 export async function confirmCandidate(id: string): Promise<Asset | null> {
   try {
-    const res = await fetch(`${API_BASE}/imports/${id}/confirm`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (res.ok) {
-      return await res.json();
+    return await apiFetch<Asset>(`/imports/${id}/confirm`, { method: 'POST' });
+  } catch (err) {
+    if (err instanceof APIError && globalOnError) globalOnError(err);
+    const found = localCandidates.find((c) => c.id === id);
+    if (found) {
+      found.status = 'confirmed';
+      const parsed = JSON.parse(found.parsed_data);
+      return createAsset({
+        name: parsed.name,
+        description: parsed.description,
+        category: parsed.category || 'Electronics',
+        merchant: parsed.merchant,
+        invoice_number: parsed.invoice_number,
+        purchase_price: parsed.purchase_price,
+        purchase_currency: parsed.purchase_currency || 'INR',
+        purchase_date: parsed.purchase_date,
+        warranty_expiry: new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0],
+        exchange_deadline: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+        notes: `Imported via Gmail candidate (${found.gmail_message_id})`,
+      });
     }
-  } catch {
-    // fallback
+    return null;
   }
-
-  const found = localCandidates.find((c) => c.id === id);
-  if (found) {
-    found.status = 'confirmed';
-    const parsed = JSON.parse(found.parsed_data);
-    return createAsset({
-      name: parsed.name,
-      description: parsed.description,
-      category: parsed.category || 'Electronics',
-      merchant: parsed.merchant,
-      invoice_number: parsed.invoice_number,
-      purchase_price: parsed.purchase_price,
-      purchase_currency: parsed.purchase_currency || 'INR',
-      purchase_date: parsed.purchase_date,
-      warranty_expiry: new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0],
-      exchange_deadline: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-      notes: `Imported via Gmail candidate (${found.gmail_message_id})`,
-    });
-  }
-  return null;
 }
 
 export async function ignoreCandidate(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/imports/${id}/ignore`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (res.ok) return true;
-  } catch {
-    // fallback
+    await apiFetch(`/imports/${id}/ignore`, { method: 'POST' });
+    return true;
+  } catch (err) {
+    if (err instanceof APIError && globalOnError) globalOnError(err);
+    const found = localCandidates.find((c) => c.id === id);
+    if (found) found.status = 'ignored';
+    return true;
   }
-
-  const found = localCandidates.find((c) => c.id === id);
-  if (found) {
-    found.status = 'ignored';
-  }
-  return true;
 }
 
 export async function fetchReminders(): Promise<any[]> {
-  try {
-    const res = await fetch(`${API_BASE}/reminders`, { credentials: 'include' });
-    if (res.ok) {
-      const data = await res.json();
+  return tryFetch(
+    async () => {
+      const data = await apiFetch<any[]>('/reminders');
       if (Array.isArray(data)) return data;
-    }
-  } catch {
-    // fallback
-  }
-  return [
-    {
-      id: 'rem-1',
-      user_id: 'demo-user',
-      reminder_type: 'warranty_7day',
-      scheduled_for: new Date(Date.now() + 8 * 86400000).toISOString(),
-      sent_at: null,
+      throw new APIError('invalid response', 500);
     },
-    {
-      id: 'rem-2',
-      user_id: 'demo-user',
-      reminder_type: 'exchange_3day',
-      scheduled_for: new Date(Date.now() - 1 * 86400000).toISOString(),
-      sent_at: new Date(Date.now() - 1 * 86400000).toISOString(),
-    },
-  ];
+    () => [
+      {
+        id: 'rem-1',
+        user_id: 'demo-user',
+        reminder_type: 'warranty_7day',
+        scheduled_for: new Date(Date.now() + 8 * 86400000).toISOString(),
+        sent_at: null,
+      },
+      {
+        id: 'rem-2',
+        user_id: 'demo-user',
+        reminder_type: 'exchange_3day',
+        scheduled_for: new Date(Date.now() - 1 * 86400000).toISOString(),
+        sent_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+      },
+    ]
+  );
 }
 
 export async function triggerProcessReminders(): Promise<number> {
   try {
-    const res = await fetch(`${API_BASE}/reminders/process`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return data.processed || 0;
-    }
-  } catch {
-    // fallback
+    const data = await apiFetch<{ processed: number }>('/reminders/process', { method: 'POST' });
+    return data.processed || 0;
+  } catch (err) {
+    if (err instanceof APIError && globalOnError) globalOnError(err);
+    return 1;
   }
-  return 1;
+}
+
+export async function fetchSeedDemo(): Promise<any> {
+  return apiFetch('/seed/demo', { method: 'POST' });
 }

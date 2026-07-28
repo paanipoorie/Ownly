@@ -23,6 +23,10 @@ func (h *UploadHandler) Upload(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "no file uploaded"})
 	}
 
+	if file.Size > 10*1024*1024 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "file too large; maximum size is 10 MB"})
+	}
+
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowed := map[string]bool{
 		".jpg":  true,

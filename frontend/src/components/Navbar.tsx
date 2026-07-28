@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, Clock, Inbox, Settings, LogIn, LogOut, Plus, ShieldCheck } from 'lucide-react';
+import { Package, Clock, Inbox, LogIn, LogOut, Plus, ShieldCheck } from 'lucide-react';
 import type { User } from '../lib/types';
 
 interface NavbarProps {

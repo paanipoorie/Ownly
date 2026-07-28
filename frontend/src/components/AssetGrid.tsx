@@ -11,6 +11,29 @@ interface AssetGridProps {
   onEdit: (asset: Asset) => void;
   onDelete: (asset: Asset) => void;
   onOpenAddModal: () => void;
+  loading?: boolean;
+}
+
+function SkeletonCard() {
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-4 animate-pulse">
+      <div className="mb-3 h-44 w-full rounded-xl bg-muted" />
+      <div className="mb-2 space-y-2">
+        <div className="h-4 w-3/4 rounded bg-muted" />
+        <div className="h-3 w-1/2 rounded bg-muted" />
+      </div>
+      <div className="pt-2 border-t border-border/40">
+        <div className="flex justify-between mb-3">
+          <div className="h-3 w-10 rounded bg-muted" />
+          <div className="h-4 w-20 rounded bg-muted" />
+        </div>
+        <div className="flex gap-2">
+          <div className="h-5 w-24 rounded-full bg-muted" />
+          <div className="h-5 w-20 rounded-full bg-muted" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export const AssetGrid: React.FC<AssetGridProps> = ({
@@ -20,11 +43,10 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
   onEdit,
   onDelete,
   onOpenAddModal,
+  loading,
 }) => {
-  // Apply Search & Filters
   const filtered = React.useMemo(() => {
     return assets.filter((asset) => {
-      // Search
       if (filters.search) {
         const query = filters.search.toLowerCase();
         const matchesName = asset.name?.toLowerCase().includes(query);
@@ -37,12 +59,10 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
         }
       }
 
-      // Category
       if (filters.category !== 'all' && asset.category !== filters.category) {
         return false;
       }
 
-      // Warranty Status
       if (filters.warrantyStatus !== 'all') {
         const { status } = getWarrantyStatus(asset.warranty_expiry);
         if (filters.warrantyStatus === 'active' && status !== 'active') return false;
@@ -54,7 +74,6 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
     });
   }, [assets, filters]);
 
-  // Apply Sorting
   const sorted = React.useMemo(() => {
     return [...filtered].sort((a, b) => {
       if (filters.sortBy === 'newest') {
@@ -81,6 +100,16 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
       return 0;
     });
   }, [filtered, filters.sortBy]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    );
+  }
 
   if (sorted.length === 0) {
     return (

@@ -112,3 +112,26 @@ Status: **Complete**
 
 Deliverables: - Empty/loading/error states - Security hardening - Demo
 seed
+
+Status: **Complete**
+
+- **Backend security hardening:**
+  - Rate limiting (100 req/min per IP/user via `fiber/middleware/limiter`)
+  - Request body size limit (10 MB via `fiber.Config.BodyLimit`)
+  - Security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`)
+  - Origin/Referer CSRF check on all mutation endpoints
+  - Input validation on asset create/update (length & price bounds)
+  - File size validation on upload (10 MB max)
+  - Error handler sanitization (no internal error leaking)
+  - Session cookie `Secure` flag in production
+
+- **Backend demo seed:**
+  - `POST /api/seed/demo` creates 5 sample assets with various warranty/exchange states and 2 pending import candidates
+
+- **Frontend loading/empty/error states:**
+  - Toast notification system (`ToastProvider`/`useToast`) for success/error/info
+  - React `ErrorBoundary` capturing render crashes with retry UI
+  - Loading skeleton cards for `AssetGrid`, `TimelinePage`, and `StatsBar`
+  - API error propagation through `APIError` class with global error handler
+  - Seed demo button when no assets exist
+  - Removed all unused imports (0 TS errors)

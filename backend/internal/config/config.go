@@ -19,6 +19,8 @@ type Config struct {
 	R2SecretKey     string
 	R2BucketName    string
 	R2PublicURL     string
+	CSRFSecret      string
+	Env             string
 }
 
 func Load() *Config {
@@ -36,6 +38,8 @@ func Load() *Config {
 		R2SecretKey:    getEnv("R2_SECRET_ACCESS_KEY", ""),
 		R2BucketName:   getEnv("R2_BUCKET_NAME", "ownly-assets"),
 		R2PublicURL:    getEnv("R2_PUBLIC_URL", ""),
+		CSRFSecret:     getEnv("CSRF_SECRET", "change-me-csrf-secret"),
+		Env:            getEnv("ENV", "development"),
 	}
 }
 

@@ -12,9 +12,7 @@ import {
   Tag,
   Edit2,
   Trash2,
-  ExternalLink,
   Clock,
-  CheckCircle2,
 } from 'lucide-react';
 import type { Asset, TimelineEvent } from '../lib/types';
 import { formatCurrency, formatDate, getWarrantyStatus, getExchangeStatus } from '../lib/utils';

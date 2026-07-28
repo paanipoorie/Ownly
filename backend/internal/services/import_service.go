@@ -154,3 +154,7 @@ func (s *ImportService) IgnoreCandidate(id string, userID string) error {
 	}
 	return s.candidateRepo.UpdateStatus(cUUID, "ignored")
 }
+
+func (s *ImportService) CreateCandidate(candidate *models.ImportCandidate) error {
+	return s.candidateRepo.Create(candidate)
+}

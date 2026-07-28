@@ -4,22 +4,62 @@ import {
   ShoppingBag,
   ShieldCheck,
   RefreshCw,
-  Filter,
   Calendar,
   ChevronRight,
-  ExternalLink,
 } from 'lucide-react';
 import type { TimelineEvent, Asset } from '../lib/types';
 import { formatDate, formatCurrency } from '../lib/utils';
 
+export function TimelineSkeleton() {
+  return (
+    <div className="max-w-4xl mx-auto py-4 animate-pulse">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="space-y-2">
+          <div className="h-6 w-48 rounded bg-muted" />
+          <div className="h-4 w-72 rounded bg-muted" />
+        </div>
+        <div className="flex gap-1.5">
+          <div className="h-8 w-16 rounded-2xl bg-muted" />
+          <div className="h-8 w-24 rounded-2xl bg-muted" />
+          <div className="h-8 w-28 rounded-2xl bg-muted" />
+          <div className="h-8 w-24 rounded-2xl bg-muted" />
+        </div>
+      </div>
+      <div className="space-y-8">
+        {[1, 2, 3].map((month) => (
+          <div key={month}>
+            <div className="h-6 w-40 rounded-full bg-muted mb-4" />
+            <div className="pl-6 space-y-4">
+              {[1, 2].map((evt) => (
+                <div key={evt} className="rounded-2xl border border-border/60 bg-card p-4 shadow-xs">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-muted shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-3 w-32 rounded bg-muted" />
+                      <div className="h-4 w-64 rounded bg-muted" />
+                      <div className="h-3 w-48 rounded bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface TimelinePageProps {
   events: TimelineEvent[];
   onSelectAsset: (asset: Asset) => void;
+  loading?: boolean;
 }
 
 export const TimelinePage: React.FC<TimelinePageProps> = ({
   events,
   onSelectAsset,
+  loading,
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
 
@@ -44,6 +84,8 @@ export const TimelinePage: React.FC<TimelinePageProps> = ({
     });
     return Array.from(map.entries());
   }, [filteredEvents]);
+
+  if (loading) return <TimelineSkeleton />;
 
   return (
     <div className="max-w-4xl mx-auto py-4">

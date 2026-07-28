@@ -7,12 +7,14 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/paanipoorie/Ownly/internal/config"
 	"github.com/paanipoorie/Ownly/internal/database"
 	"github.com/paanipoorie/Ownly/internal/handlers"
 	"github.com/paanipoorie/Ownly/internal/middleware"
+	"github.com/paanipoorie/Ownly/internal/models"
 	"github.com/paanipoorie/Ownly/internal/repositories"
 	"github.com/paanipoorie/Ownly/internal/services"
 )
@@ -40,32 +42,71 @@ func main() {
 	timelineService := services.NewTimelineService(eventRepo)
 	_ = services.NewStorageService()
 	searchService := services.NewSearchService(assetRepo)
+	seedService := services.NewSeedService(assetService, candidateRepo, eventRepo, reminderRepo)
 
-	authHandler := handlers.NewAuthHandler(authService, cfg.GoogleClientID, cfg.GoogleSecret, cfg.GoogleRedirect)
+	authHandler := handlers.NewAuthHandler(authService, cfg.GoogleClientID, cfg.GoogleSecret, cfg.GoogleRedirect, cfg.Env)
 	assetHandler := handlers.NewAssetHandler(assetService)
 	timelineHandler := handlers.NewTimelineHandler(timelineService)
 	uploadHandler := handlers.NewUploadHandler()
 	searchHandler := handlers.NewSearchHandler(searchService)
 	importHandler := handlers.NewImportHandler(importService)
 	reminderHandler := handlers.NewReminderHandler(reminderService)
+	seedHandler := handlers.NewSeedHandler(seedService)
 
 	app := fiber.New(fiber.Config{
+		BodyLimit: 10 * 1024 * 1024,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+			code := fiber.StatusInternalServerError
+			if e, ok := err.(*fiber.Error); ok {
+				code = e.Code
+			}
+			msg := "internal server error"
+			if code != fiber.StatusInternalServerError {
+				msg = err.Error()
+			}
+			return c.Status(code).JSON(fiber.Map{"error": msg})
 		},
 	})
 
 	app.Use(recover.New())
 	app.Use(logger.New())
+	app.Use(limiter.New(limiter.Config{
+		Max:        100,
+		Expiration: 1 * time.Minute,
+		KeyGenerator: func(c *fiber.Ctx) string {
+			ip := c.IP()
+			if id := c.Locals("user"); id != nil {
+				if u, ok := id.(*models.User); ok {
+					ip = u.ID.String()
+				}
+			}
+			return ip
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"error": "rate limit exceeded"})
+		},
+	}))
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.FrontendURL,
 		AllowCredentials: true,
-		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-CSRF-Token",
+		ExposeHeaders:    "X-CSRF-Token",
 	}))
+	app.Use(func(c *fiber.Ctx) error {
+		c.Set("X-Content-Type-Options", "nosniff")
+		c.Set("X-Frame-Options", "DENY")
+		c.Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		return c.Next()
+	})
 
 	app.Static("/uploads", "./uploads")
 
 	api := app.Group("/api")
+	api.Use(middleware.CSRFMiddleware(cfg.FrontendURL))
+
+	api.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{"status": "ok"})
+	})
 
 	auth := api.Group("/auth")
 	auth.Get("/login", authHandler.Login)
@@ -93,12 +134,11 @@ func main() {
 	reminders.Get("/", reminderHandler.List)
 	reminders.Post("/process", reminderHandler.Process)
 
+	seed := api.Group("/seed", middleware.AuthMiddleware(authService))
+	seed.Post("/demo", seedHandler.SeedDemo)
+
 	api.Get("/search", middleware.AuthMiddleware(authService), searchHandler.Search)
 	api.Post("/upload", middleware.AuthMiddleware(authService), uploadHandler.Upload)
-
-	api.Get("/health", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"status": "ok"})
-	})
 
 	addr := fmt.Sprintf(":%d", cfg.Port)
 	log.Printf("server starting on %s", addr)

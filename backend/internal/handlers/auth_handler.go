@@ -16,20 +16,23 @@ type AuthHandler struct {
 		ClientID    string
 		Secret      string
 		RedirectURL string
+		Env         string
 	}
 }
 
-func NewAuthHandler(authService *services.AuthService, clientID, secret, redirectURL string) *AuthHandler {
+func NewAuthHandler(authService *services.AuthService, clientID, secret, redirectURL, env string) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 		config: struct {
 			ClientID    string
 			Secret      string
 			RedirectURL string
+			Env         string
 		}{
 			ClientID:    clientID,
 			Secret:      secret,
 			RedirectURL: redirectURL,
+			Env:         env,
 		},
 	}
 }
@@ -82,12 +85,13 @@ func (h *AuthHandler) Callback(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create session"})
 	}
 
+	secure := h.config.Env == "production"
 	c.Cookie(&fiber.Cookie{
 		Name:     "session",
 		Value:    token,
 		Path:     "/",
 		HTTPOnly: true,
-		Secure:   false,
+		Secure:   secure,
 		SameSite: "Lax",
 		MaxAge:   7 * 24 * 60 * 60,
 	})

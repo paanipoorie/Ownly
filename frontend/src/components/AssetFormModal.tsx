@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, Image as ImageIcon, Loader2, Calendar, Tag, DollarSign, FileText, CheckCircle2 } from 'lucide-react';
+import { X, Upload, Loader2, Tag, CheckCircle2 } from 'lucide-react';
 import type { Asset } from '../lib/types';
 import { uploadFile } from '../lib/api';
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Inbox, Sparkles, CheckCircle2, XCircle, RefreshCw, ShoppingBag, Loader2, ArrowRight } from 'lucide-react';
+import { Inbox, Sparkles, CheckCircle2, XCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import type { ImportCandidate } from '../lib/types';
 import { fetchImportCandidates, scanGmailInbox, confirmCandidate, ignoreCandidate } from '../lib/api';
-import { formatCurrency, formatDate } from '../lib/utils';
+import { formatCurrency } from '../lib/utils';
 
 interface ImportsPageProps {
   onCandidateConfirmed: () => void;

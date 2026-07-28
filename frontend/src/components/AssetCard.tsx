@@ -1,7 +1,7 @@
 import React from 'react';
-import { ShieldCheck, ShieldAlert, ShieldX, RefreshCw, Calendar, Tag, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldX, RefreshCw, Tag, MoreVertical, Edit2, Trash2 } from 'lucide-react';
 import type { Asset } from '../lib/types';
-import { formatCurrency, formatDate, getWarrantyStatus, getExchangeStatus } from '../lib/utils';
+import { formatCurrency, getWarrantyStatus, getExchangeStatus } from '../lib/utils';
 
 interface AssetCardProps {
   asset: Asset;

@@ -5,9 +5,24 @@ import { formatCurrency, getWarrantyStatus, getExchangeStatus } from '../lib/uti
 
 interface StatsBarProps {
   assets: Asset[];
+  loading?: boolean;
 }
 
-export const StatsBar: React.FC<StatsBarProps> = ({ assets }) => {
+function SkeletonStat() {
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs animate-pulse">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="h-3 w-24 rounded bg-muted" />
+          <div className="h-7 w-16 rounded bg-muted" />
+        </div>
+        <div className="h-12 w-12 rounded-xl bg-muted" />
+      </div>
+    </div>
+  );
+}
+
+export const StatsBar: React.FC<StatsBarProps> = ({ assets, loading }) => {
   const totalAssets = assets.length;
 
   const totalValue = assets.reduce((sum, item) => sum + (item.purchase_price || 0), 0);
@@ -21,6 +36,17 @@ export const StatsBar: React.FC<StatsBarProps> = ({ assets }) => {
     const { status } = getExchangeStatus(item.exchange_deadline);
     return status === 'active' || status === 'expiring_soon';
   }).length;
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <SkeletonStat />
+        <SkeletonStat />
+        <SkeletonStat />
+        <SkeletonStat />
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

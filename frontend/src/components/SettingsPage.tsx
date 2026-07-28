@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Bell, Shield, Server, CheckCircle2, Play, Loader2 } from 'lucide-react';
+import { Mail, Bell, Shield, CheckCircle2, Play, Loader2 } from 'lucide-react';
 import type { User, Reminder } from '../lib/types';
 import { fetchReminders, triggerProcessReminders } from '../lib/api';
 import { formatDate } from '../lib/utils';
