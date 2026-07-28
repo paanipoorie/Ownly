@@ -1,0 +1,24 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Dashboard">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-8 flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Ownly</h1>
+      <div id="auth" class="flex items-center gap-4">
+        <a
+          href="http://localhost:3000/api/auth/login"
+          class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          Sign in with Google
+        </a>
+      </div>
+    </header>
+    <main>
+      <p class="text-muted-foreground">
+        Your personal ownership hub. Sign in to get started.
+      </p>
+    </main>
+  </div>
+</Layout>
