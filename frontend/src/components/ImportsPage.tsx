@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Inbox, Sparkles, CheckCircle2, XCircle, ShoppingBag, Loader2 } from 'lucide-react';
+import { Inbox, Sparkles, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import type { ImportCandidate } from '../lib/types';
 import { fetchImportCandidates, scanGmailInbox, confirmCandidate, ignoreCandidate } from '../lib/api';
 import { formatCurrency } from '../lib/utils';
@@ -60,41 +60,40 @@ export const ImportsPage: React.FC<ImportsPageProps> = ({ onCandidateConfirmed }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-4">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 bg-gradient-to-r from-indigo-900/30 via-purple-900/20 to-card p-6 rounded-3xl border border-indigo-500/20 shadow-md">
-        <div>
-          <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 mb-1">
-            <Inbox className="h-5 w-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">Gmail Smart Importer</span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Import Queue</h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Review automatically extracted purchase receipts from your Gmail inbox. Confirm candidates to instantly add them to your Dashboard & Timeline.
+    <div className="max-w-3xl mx-auto py-2">
+      {/* Inbox scan controller panel */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 bg-neutral-50 dark:bg-neutral-900/60 p-5 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-3xs">
+        <div className="space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 block">
+            Gmail Integration
+          </span>
+          <h1 className="text-base font-bold text-foreground">Import Candidates</h1>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-md leading-relaxed">
+            Extract purchases automatically from order confirmation emails. Confirming matches adds them to your collection instantly.
           </p>
         </div>
 
         <button
           onClick={handleScan}
           disabled={scanning}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all shrink-0"
+          className="flex items-center gap-1.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold px-3 py-1.5 hover:opacity-90 active:scale-[0.98] disabled:opacity-50 transition-all shrink-0"
         >
           {scanning ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-3.5 w-3.5" />
           )}
-          <span>{scanning ? 'Scanning Inbox...' : 'Scan Gmail Inbox'}</span>
+          <span>{scanning ? 'Scanning...' : 'Scan Inbox'}</span>
         </button>
       </div>
 
-      {/* Candidates List */}
+      {/* Queue items list */}
       {loading ? (
-        <div className="flex h-48 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <div className="flex h-32 items-center justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-neutral-400 dark:text-neutral-500" />
         </div>
       ) : candidates.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {candidates.map((candidate) => {
             let parsed: any = {};
             try {
@@ -106,61 +105,57 @@ export const ImportsPage: React.FC<ImportsPageProps> = ({ onCandidateConfirmed }
             return (
               <div
                 key={candidate.id}
-                className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-indigo-500/30 hover:shadow-md"
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-card p-4 transition-all duration-200 hover:border-neutral-400 dark:hover:border-neutral-700 shadow-3xs"
               >
-                {/* Left Parsed Overview */}
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5">
-                    <ShoppingBag className="h-6 w-6" />
+                {/* Details layout */}
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 text-[10px] font-bold text-foreground">
+                      {parsed.merchant || 'Inbox Match'}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono truncate max-w-[150px]">
+                      {parsed.invoice_number ? `#${parsed.invoice_number}` : candidate.sender}
+                    </span>
                   </div>
 
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                        {parsed.merchant || 'Gmail Import'}
-                      </span>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {parsed.invoice_number ? `Order #${parsed.invoice_number}` : candidate.sender}
-                      </span>
-                    </div>
+                  <h3 className="text-xs font-bold text-foreground truncate max-w-md">
+                    {parsed.name || candidate.subject}
+                  </h3>
 
-                    <h3 className="mt-1 text-base font-bold text-foreground">
-                      {parsed.name || candidate.subject}
-                    </h3>
-                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                      {candidate.snippet}
-                    </p>
-
+                  <div className="flex items-center gap-2">
                     {parsed.purchase_price > 0 && (
-                      <div className="mt-2 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
                         {formatCurrency(parsed.purchase_price, parsed.purchase_currency || 'INR')}
-                      </div>
+                      </span>
                     )}
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 line-clamp-1 truncate max-w-[250px]">
+                      — {candidate.snippet}
+                    </span>
                   </div>
                 </div>
 
-                {/* Right Action Buttons */}
-                <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                {/* Queue decision triggers */}
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                   <button
                     onClick={() => handleIgnore(candidate.id)}
                     disabled={isProcessing}
-                    className="flex items-center gap-1.5 rounded-xl border border-border px-3.5 py-2 text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2.5 py-1 text-[11px] font-semibold text-neutral-500 hover:bg-destructive/5 hover:text-destructive hover:border-destructive/35 transition-colors disabled:opacity-50"
                   >
-                    <XCircle className="h-4 w-4" />
+                    <XCircle className="h-3 w-3" />
                     <span>Ignore</span>
                   </button>
 
                   <button
                     onClick={() => handleConfirm(candidate.id)}
                     disabled={isProcessing}
-                    className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-medium text-white shadow-sm hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-1 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 px-3 py-1 text-[11px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3 w-3 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="h-4 w-4" />
+                      <CheckCircle2 className="h-3 w-3" />
                     )}
-                    <span>Confirm & Import</span>
+                    <span>Import</span>
                   </button>
                 </div>
               </div>
@@ -168,11 +163,11 @@ export const ImportsPage: React.FC<ImportsPageProps> = ({ onCandidateConfirmed }
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border p-12 text-center my-6 bg-card/40">
-          <CheckCircle2 className="h-12 w-12 text-emerald-500/80 mb-3" />
-          <h3 className="text-lg font-bold text-foreground">Import Queue Clear</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mt-1">
-            All detected email receipts have been reviewed and imported. Click "Scan Gmail Inbox" above to check for new purchases!
+        <div className="flex flex-col items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 p-16 text-center my-6 bg-card">
+          <CheckCircle2 className="h-10 w-10 text-emerald-500/80 mb-3 stroke-[1.2]" />
+          <h3 className="text-sm font-bold text-foreground">Import Queue Empty</h3>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mt-1.5 leading-relaxed">
+            All detected purchase candidates have been processed. Click scan above to parse emails for receipts.
           </p>
         </div>
       )}

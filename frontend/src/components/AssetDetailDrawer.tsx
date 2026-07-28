@@ -1,19 +1,5 @@
 import React from 'react';
-import {
-  X,
-  ShieldCheck,
-  ShieldAlert,
-  ShieldX,
-  RefreshCw,
-  Calendar,
-  DollarSign,
-  FileText,
-  Building2,
-  Tag,
-  Edit2,
-  Trash2,
-  Clock,
-} from 'lucide-react';
+import { X, Edit2, Trash2, Tag, Calendar, ShieldAlert } from 'lucide-react';
 import type { Asset, TimelineEvent } from '../lib/types';
 import { formatCurrency, formatDate, getWarrantyStatus, getExchangeStatus } from '../lib/utils';
 
@@ -36,48 +22,47 @@ export const AssetDetailDrawer: React.FC<AssetDetailDrawerProps> = ({
 
   const warranty = getWarrantyStatus(asset.warranty_expiry);
   const exchange = getExchangeStatus(asset.exchange_deadline);
-
-  // Filter timeline events for this asset
   const assetEvents = timelineEvents.filter((evt) => evt.asset_id === asset.id);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-background/60 backdrop-blur-xs transition-opacity animate-fade-in">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs transition-opacity animate-fade-in" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex h-full w-full max-w-lg flex-col justify-between border-l border-border bg-card shadow-2xl overflow-y-auto animate-slide-in"
+        className="relative flex h-full w-full max-w-md flex-col justify-between border-l border-neutral-200 dark:border-neutral-800 bg-card shadow-lg overflow-y-auto animate-slide-in"
       >
-        {/* Header */}
-        <div>
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/90 px-6 py-4 backdrop-blur-md">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Asset Details
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onEdit(asset)}
-                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
-              >
-                <Edit2 className="h-3.5 w-3.5" />
-                Edit
-              </button>
-              <button
-                onClick={() => onDelete(asset)}
-                className="flex items-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
-              </button>
-              <button
-                onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        {/* Drawer Header Controls */}
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 bg-card px-5 py-3.5 backdrop-blur-md">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            Specifications
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onEdit(asset)}
+              className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2.5 py-1 text-xs font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <Edit2 className="h-3 w-3" />
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(asset)}
+              className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2.5 py-1 text-xs font-semibold text-destructive hover:bg-destructive/5 transition-colors"
+            >
+              <Trash2 className="h-3 w-3" />
+              Delete
+            </button>
+            <button
+              onClick={onClose}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-foreground transition-colors ml-1"
+            >
+              <X className="h-4.5 w-4.5" />
+            </button>
           </div>
+        </div>
 
-          {/* Hero Banner / Image */}
-          <div className="relative h-64 w-full bg-muted/40 overflow-hidden">
+        {/* Info Content container */}
+        <div className="flex-1 p-5 space-y-6">
+          {/* Main Visual Image Banner */}
+          <div className="relative aspect-16/10 w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-md overflow-hidden">
             {asset.image_url ? (
               <img
                 src={asset.image_url}
@@ -85,166 +70,141 @@ export const AssetDetailDrawer: React.FC<AssetDetailDrawerProps> = ({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 text-muted-foreground">
-                <Tag className="h-16 w-16 opacity-30" />
+              <div className="flex h-full w-full items-center justify-center text-neutral-300 dark:text-neutral-700">
+                <Tag className="h-10 w-10 stroke-[1.2]" />
               </div>
             )}
-            <span className="absolute bottom-3 left-3 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold backdrop-blur-md border border-border/40 shadow-xs">
-              {asset.category || 'General'}
-            </span>
           </div>
 
-          {/* Title & Description */}
-          <div className="px-6 py-5 border-b border-border/60">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">{asset.name}</h2>
+          {/* Title Area */}
+          <div>
+            <span className="text-[10px] font-mono tracking-wider text-neutral-400 dark:text-neutral-500 uppercase">
+              {asset.category || 'Other'}
+            </span>
+            <h2 className="text-lg font-bold tracking-tight text-foreground mt-0.5">{asset.name}</h2>
             {asset.description && (
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed font-normal">
                 {asset.description}
               </p>
             )}
           </div>
 
-          {/* Key Properties Grid */}
-          <div className="grid grid-cols-2 gap-4 px-6 py-5 border-b border-border/60 text-sm">
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <DollarSign className="h-3.5 w-3.5 text-indigo-500" /> Purchase Price
-              </span>
-              <p className="mt-1 font-semibold text-foreground text-base">
+          {/* Notion-style Metadata Grid */}
+          <div className="border-y border-neutral-200 dark:border-neutral-800/80 py-4 space-y-3 text-xs">
+            <div className="grid grid-cols-3">
+              <span className="text-neutral-400 dark:text-neutral-500">Purchase Price</span>
+              <span className="col-span-2 font-mono font-semibold text-foreground">
                 {formatCurrency(asset.purchase_price, asset.purchase_currency)}
-              </p>
+              </span>
             </div>
 
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5 text-indigo-500" /> Merchant / Store
+            <div className="grid grid-cols-3">
+              <span className="text-neutral-400 dark:text-neutral-500">Merchant / Store</span>
+              <span className="col-span-2 font-medium text-foreground">
+                {asset.merchant || '—'}
               </span>
-              <p className="mt-1 font-semibold text-foreground">
-                {asset.merchant || 'Unspecified'}
-              </p>
             </div>
 
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-indigo-500" /> Purchase Date
-              </span>
-              <p className="mt-1 font-medium text-foreground">
+            <div className="grid grid-cols-3">
+              <span className="text-neutral-400 dark:text-neutral-500">Purchase Date</span>
+              <span className="col-span-2 font-medium text-foreground">
                 {formatDate(asset.purchase_date)}
-              </p>
+              </span>
             </div>
 
-            <div>
-              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5 text-indigo-500" /> Invoice Number
+            <div className="grid grid-cols-3">
+              <span className="text-neutral-400 dark:text-neutral-500">Invoice Number</span>
+              <span className="col-span-2 font-mono text-foreground">
+                {asset.invoice_number || '—'}
               </span>
-              <p className="mt-1 font-medium text-foreground font-mono">
-                {asset.invoice_number || 'N/A'}
-              </p>
             </div>
           </div>
 
-          {/* Warranty & Exchange Status Section */}
-          <div className="px-6 py-5 border-b border-border/60">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Warranty & Exchange Protection
-            </h3>
-
-            <div className="space-y-3">
-              {/* Warranty Banner */}
-              <div
-                className={`flex items-center justify-between rounded-xl p-3.5 border ${
-                  warranty.status === 'active'
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
-                    : warranty.status === 'expiring_soon'
-                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300'
-                    : 'bg-muted/40 border-border/60 text-muted-foreground'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {warranty.status === 'active' && <ShieldCheck className="h-5 w-5 text-emerald-500" />}
-                  {warranty.status === 'expiring_soon' && <ShieldAlert className="h-5 w-5 text-amber-500 animate-pulse" />}
-                  {warranty.status === 'expired' && <ShieldX className="h-5 w-5 text-muted-foreground" />}
-                  {warranty.status === 'none' && <ShieldX className="h-5 w-5 text-muted-foreground" />}
+          {/* Warranty & Returns Alerts */}
+          <div className="space-y-2.5 text-xs">
+            {warranty.status !== 'none' && (
+              <div className="flex items-center justify-between p-3 rounded-md bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800/80">
+                <div className="flex items-center gap-2.5">
+                  <span className={`h-2 w-2 rounded-full ${
+                    warranty.status === 'active' ? 'bg-emerald-500' :
+                    warranty.status === 'expiring_soon' ? 'bg-amber-500' : 'bg-neutral-400'
+                  }`} />
                   <div>
-                    <h4 className="text-sm font-semibold">Warranty Status</h4>
-                    <p className="text-xs opacity-90">{warranty.label}</p>
+                    <span className="font-semibold block">Warranty Status</span>
+                    <span className="text-neutral-400 dark:text-neutral-500 text-[10px]">{warranty.label}</span>
                   </div>
                 </div>
                 {asset.warranty_expiry && (
-                  <span className="text-xs font-mono font-medium">
-                    {formatDate(asset.warranty_expiry)}
-                  </span>
+                  <span className="font-mono text-neutral-500 text-[11px]">{formatDate(asset.warranty_expiry)}</span>
                 )}
               </div>
+            )}
 
-              {/* Exchange Banner */}
-              <div
-                className={`flex items-center justify-between rounded-xl p-3.5 border ${
-                  exchange.status === 'active' || exchange.status === 'expiring_soon'
-                    ? 'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-300'
-                    : 'bg-muted/40 border-border/60 text-muted-foreground'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <RefreshCw className="h-5 w-5 text-purple-500" />
+            {exchange.status !== 'none' && (
+              <div className="flex items-center justify-between p-3 rounded-md bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800/80">
+                <div className="flex items-center gap-2.5">
+                  <span className={`h-2 w-2 rounded-full ${
+                    exchange.status === 'active' || exchange.status === 'expiring_soon' ? 'bg-indigo-500' : 'bg-neutral-400'
+                  }`} />
                   <div>
-                    <h4 className="text-sm font-semibold">Exchange / Return Window</h4>
-                    <p className="text-xs opacity-90">{exchange.label}</p>
+                    <span className="font-semibold block">Return Window</span>
+                    <span className="text-neutral-400 dark:text-neutral-500 text-[10px]">{exchange.label}</span>
                   </div>
                 </div>
                 {asset.exchange_deadline && (
-                  <span className="text-xs font-mono font-medium">
-                    {formatDate(asset.exchange_deadline)}
-                  </span>
+                  <span className="font-mono text-neutral-500 text-[11px]">{formatDate(asset.exchange_deadline)}</span>
                 )}
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Asset Notes */}
+          {/* Special Notes area */}
           {asset.notes && (
-            <div className="px-6 py-5 border-b border-border/60">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Notes & Instructions
-              </h3>
-              <p className="text-sm text-foreground bg-muted/30 p-3.5 rounded-xl border border-border/40 whitespace-pre-wrap">
+            <div className="space-y-1.5">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                Notes
+              </h4>
+              <p className="text-xs text-foreground bg-neutral-50 dark:bg-neutral-900 p-3 rounded-md border border-neutral-200 dark:border-neutral-800/60 whitespace-pre-wrap leading-relaxed">
                 {asset.notes}
               </p>
             </div>
           )}
 
-          {/* Asset Timeline History */}
-          <div className="px-6 py-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-indigo-500" /> Asset Event History
-            </h3>
-
+          {/* History Event log */}
+          <div className="space-y-3 pt-2">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              Event Log
+            </h4>
             {assetEvents.length > 0 ? (
-              <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
+              <div className="space-y-3 relative pl-3 border-l border-neutral-200 dark:border-neutral-800">
                 {assetEvents.map((evt) => (
-                  <div key={evt.id} className="relative pl-8">
-                    <div className="absolute left-1.5 top-1 h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 border-background bg-indigo-600" />
-                    <p className="text-xs text-muted-foreground">{formatDate(evt.event_date)}</p>
-                    <h5 className="text-sm font-semibold text-foreground">{evt.title}</h5>
+                  <div key={evt.id} className="relative text-xs">
+                    <div className="absolute -left-[16px] top-1.5 h-1.5 w-1.5 rounded-full bg-neutral-400 dark:bg-neutral-600 border border-card" />
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono block">
+                      {formatDate(evt.event_date)}
+                    </span>
+                    <span className="font-semibold text-foreground">{evt.title}</span>
                     {evt.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{evt.description}</p>
+                      <span className="text-neutral-400 dark:text-neutral-500 block text-[11px] mt-0.5">
+                        {evt.description}
+                      </span>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground italic">No timeline events recorded yet.</p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 italic">No events recorded.</p>
             )}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-border px-6 py-4 bg-muted/20">
+        {/* Footer info closing button */}
+        <div className="border-t border-neutral-200 dark:border-neutral-800 px-5 py-3 bg-neutral-50 dark:bg-neutral-900/50">
           <button
             onClick={onClose}
-            className="w-full rounded-xl border border-border py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
+            className="w-full rounded-md border border-neutral-200 dark:border-neutral-800 py-1.5 text-xs font-semibold text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
-            Close Drawer
+            Close Detail Sheet
           </button>
         </div>
       </div>

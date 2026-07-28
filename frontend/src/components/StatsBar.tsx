@@ -1,30 +1,13 @@
 import React from 'react';
-import { Package, ShieldCheck, RefreshCw, DollarSign } from 'lucide-react';
 import type { Asset } from '../lib/types';
 import { formatCurrency, getWarrantyStatus, getExchangeStatus } from '../lib/utils';
 
 interface StatsBarProps {
   assets: Asset[];
-  loading?: boolean;
 }
 
-function SkeletonStat() {
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs animate-pulse">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <div className="h-3 w-24 rounded bg-muted" />
-          <div className="h-7 w-16 rounded bg-muted" />
-        </div>
-        <div className="h-12 w-12 rounded-xl bg-muted" />
-      </div>
-    </div>
-  );
-}
-
-export const StatsBar: React.FC<StatsBarProps> = ({ assets, loading }) => {
+export const StatsBar: React.FC<StatsBarProps> = ({ assets }) => {
   const totalAssets = assets.length;
-
   const totalValue = assets.reduce((sum, item) => sum + (item.purchase_price || 0), 0);
 
   const activeWarranties = assets.filter((item) => {
@@ -37,86 +20,32 @@ export const StatsBar: React.FC<StatsBarProps> = ({ assets, loading }) => {
     return status === 'active' || status === 'expiring_soon';
   }).length;
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <SkeletonStat />
-        <SkeletonStat />
-        <SkeletonStat />
-        <SkeletonStat />
-      </div>
-    );
-  }
+  const stats = [
+    { label: 'Total Assets', value: totalAssets, mono: true },
+    { label: 'Portfolio Value', value: formatCurrency(totalValue, assets[0]?.purchase_currency || 'INR'), mono: true },
+    { label: 'Active Warranties', value: activeWarranties, mono: true },
+    { label: 'Exchange Windows', value: activeExchanges, mono: true },
+  ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {/* Total Assets */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-xs transition-all hover:shadow-md hover:border-border">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Total Assets
-            </p>
-            <h3 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-              {totalAssets}
-            </h3>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-            <Package className="h-6 w-6" />
-          </div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-800 mb-8 shadow-2xs">
+      {stats.map((stat, i) => (
+        <div
+          key={i}
+          className="bg-card px-5 py-4 flex flex-col justify-between transition-colors duration-200"
+        >
+          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+            {stat.label}
+          </span>
+          <span
+            className={`mt-1.5 text-lg font-bold tracking-tight text-foreground ${
+              stat.mono ? 'font-mono' : ''
+            }`}
+          >
+            {stat.value}
+          </span>
         </div>
-      </div>
-
-      {/* Total Portfolio Value */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-xs transition-all hover:shadow-md hover:border-border">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Portfolio Value
-            </p>
-            <h3 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-              {formatCurrency(totalValue, assets[0]?.purchase_currency || 'INR')}
-            </h3>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-            <DollarSign className="h-6 w-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* Active Warranties */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-xs transition-all hover:shadow-md hover:border-border">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Active Warranties
-            </p>
-            <h3 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-              {activeWarranties}
-            </h3>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* Active Exchange Windows */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-xs transition-all hover:shadow-md hover:border-border">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Exchange Windows
-            </p>
-            <h3 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-              {activeExchanges}
-            </h3>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-            <RefreshCw className="h-6 w-6" />
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };

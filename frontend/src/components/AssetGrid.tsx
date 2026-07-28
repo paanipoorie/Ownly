@@ -1,5 +1,5 @@
 import React from 'react';
-import { PackageX, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { Asset, FilterState } from '../lib/types';
 import { AssetCard } from './AssetCard';
 import { getWarrantyStatus } from '../lib/utils';
@@ -11,29 +11,6 @@ interface AssetGridProps {
   onEdit: (asset: Asset) => void;
   onDelete: (asset: Asset) => void;
   onOpenAddModal: () => void;
-  loading?: boolean;
-}
-
-function SkeletonCard() {
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4 animate-pulse">
-      <div className="mb-3 h-44 w-full rounded-xl bg-muted" />
-      <div className="mb-2 space-y-2">
-        <div className="h-4 w-3/4 rounded bg-muted" />
-        <div className="h-3 w-1/2 rounded bg-muted" />
-      </div>
-      <div className="pt-2 border-t border-border/40">
-        <div className="flex justify-between mb-3">
-          <div className="h-3 w-10 rounded bg-muted" />
-          <div className="h-4 w-20 rounded bg-muted" />
-        </div>
-        <div className="flex gap-2">
-          <div className="h-5 w-24 rounded-full bg-muted" />
-          <div className="h-5 w-20 rounded-full bg-muted" />
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export const AssetGrid: React.FC<AssetGridProps> = ({
@@ -43,10 +20,11 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
   onEdit,
   onDelete,
   onOpenAddModal,
-  loading,
 }) => {
+  // Apply Search & Filters
   const filtered = React.useMemo(() => {
     return assets.filter((asset) => {
+      // Search
       if (filters.search) {
         const query = filters.search.toLowerCase();
         const matchesName = asset.name?.toLowerCase().includes(query);
@@ -59,10 +37,12 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
         }
       }
 
+      // Category
       if (filters.category !== 'all' && asset.category !== filters.category) {
         return false;
       }
 
+      // Warranty Status
       if (filters.warrantyStatus !== 'all') {
         const { status } = getWarrantyStatus(asset.warranty_expiry);
         if (filters.warrantyStatus === 'active' && status !== 'active') return false;
@@ -74,6 +54,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
     });
   }, [assets, filters]);
 
+  // Apply Sorting
   const sorted = React.useMemo(() => {
     return [...filtered].sort((a, b) => {
       if (filters.sortBy === 'newest') {
@@ -101,33 +82,20 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
     });
   }, [filtered, filters.sortBy]);
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <SkeletonCard key={i} />
-        ))}
-      </div>
-    );
-  }
-
   if (sorted.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border p-12 text-center my-8 bg-card/40 backdrop-blur-xs">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mb-4">
-          <PackageX className="h-8 w-8" />
-        </div>
-        <h3 className="text-lg font-bold text-foreground">No assets found</h3>
-        <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+      <div className="flex flex-col items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 p-16 text-center my-6 bg-card">
+        <h3 className="text-sm font-bold text-foreground">No assets found</h3>
+        <p className="mt-1.5 text-xs text-neutral-400 dark:text-neutral-500 max-w-xs leading-relaxed">
           {assets.length === 0
-            ? 'You have not added any assets yet. Start tracking your purchases, warranties, and invoices!'
-            : 'No assets match your selected search query or filters.'}
+            ? 'Track your purchases, warranties, return windows, and invoices in one secure catalog.'
+            : 'No assets match your search terms or filter selection.'}
         </p>
         <button
           onClick={onOpenAddModal}
-          className="mt-6 flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-medium text-white shadow-md hover:brightness-110 active:scale-95 transition-all"
+          className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold px-4 py-2 hover:opacity-90 active:scale-[0.98] transition-all"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
           <span>Add New Asset</span>
         </button>
       </div>
@@ -135,7 +103,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {sorted.map((asset) => (
         <AssetCard
           key={asset.id}

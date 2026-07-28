@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, Loader2, Tag, CheckCircle2 } from 'lucide-react';
+import { X, Upload, Loader2, Check } from 'lucide-react';
 import type { Asset } from '../lib/types';
 import { uploadFile } from '../lib/api';
 
@@ -53,8 +53,8 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
     try {
       const res = await uploadFile(file);
       setImageUrl(res.url);
-    } catch (err: any) {
-      setUploadError('Failed to upload file. Please try again.');
+    } catch {
+      setUploadError('Failed to upload file.');
     } finally {
       setIsUploading(false);
     }
@@ -87,53 +87,64 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs animate-fade-in overflow-y-auto" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl rounded-3xl border border-border bg-card shadow-2xl overflow-hidden my-8"
+        className="relative w-full max-w-xl rounded-lg border border-neutral-200 dark:border-neutral-800 bg-card shadow-lg overflow-hidden my-8"
       >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-muted/30">
-          <div className="flex items-center gap-2">
-            <Tag className="h-5 w-5 text-indigo-500" />
-            <h3 className="text-lg font-bold text-foreground">
-              {assetToEdit ? 'Edit Asset' : 'Add New Asset'}
-            </h3>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 px-5 py-3.5 bg-neutral-50 dark:bg-neutral-900/50">
+          <h3 className="text-sm font-bold text-foreground">
+            {assetToEdit ? 'Edit Asset Specification' : 'Add Asset Specification'}
+          </h3>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-foreground transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4.5 w-4.5" />
           </button>
         </div>
 
-        {/* Modal Body Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-          {/* Asset Name & Category */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                Item Name *
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+          {/* Item Name */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
+              Item Name *
+            </label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Sony WH-1000XM5 Headphones"
+              className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
+            />
+          </div>
+
+          {/* Description & Category */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
+                Description
               </label>
               <input
                 type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Sony WH-1000XM5 Headphones"
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="e.g. Wireless noise canceling headphones"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Category
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -144,24 +155,10 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
             </div>
           </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-              Description
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. Wireless noise canceling headphones, Silver color"
-              className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
-            />
-          </div>
-
           {/* Price, Currency, Merchant */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Purchase Price
               </label>
               <input
@@ -170,18 +167,18 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
                 value={purchasePrice}
                 onChange={(e) => setPurchasePrice(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Currency
               </label>
               <select
                 value={purchaseCurrency}
                 onChange={(e) => setPurchaseCurrency(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               >
                 <option value="INR">INR (₹)</option>
                 <option value="USD">USD ($)</option>
@@ -191,62 +188,62 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Merchant / Store
               </label>
               <input
                 type="text"
                 value={merchant}
                 onChange={(e) => setMerchant(e.target.value)}
-                placeholder="e.g. Amazon, Croma, Apple"
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                placeholder="e.g. Amazon, Apple Store"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               />
             </div>
           </div>
 
           {/* Dates: Purchase, Warranty Expiry, Exchange Deadline */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Purchase Date
               </label>
               <input
                 type="date"
                 value={purchaseDate}
                 onChange={(e) => setPurchaseDate(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Warranty Expiry
               </label>
               <input
                 type="date"
                 value={warrantyExpiry}
                 onChange={(e) => setWarrantyExpiry(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Exchange Deadline
               </label>
               <input
                 type="date"
                 value={exchangeDeadline}
                 onChange={(e) => setExchangeDeadline(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               />
             </div>
           </div>
 
-          {/* Invoice Number & Image / File Upload */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Invoice Number & Receipt Image */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
                 Invoice / Order #
               </label>
               <input
@@ -254,22 +251,22 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
                 value={invoiceNumber}
                 onChange={(e) => setInvoiceNumber(e.target.value)}
                 placeholder="e.g. INV-2026-9812"
-                className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+                className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                Photo or Receipt Image
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
+                Photo or Receipt File
               </label>
               <div className="flex items-center gap-2">
-                <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-dashed border-border bg-background hover:bg-muted/40 cursor-pointer transition-colors text-xs font-medium text-muted-foreground">
+                <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-dashed border-neutral-200 dark:border-neutral-800 bg-background hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-colors text-xs font-semibold text-neutral-500">
                   {isUploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <Upload className="h-4 w-4 text-indigo-500" />
+                    <Upload className="h-3.5 w-3.5" />
                   )}
-                  <span>{imageUrl ? 'Change Image' : 'Upload File / Image'}</span>
+                  <span>{imageUrl ? 'Replace File' : 'Choose File'}</span>
                   <input
                     type="file"
                     accept="image/*,application/pdf"
@@ -278,58 +275,58 @@ export const AssetFormModal: React.FC<AssetFormModalProps> = ({
                   />
                 </label>
               </div>
-              {uploadError && <p className="text-xs text-destructive mt-1">{uploadError}</p>}
+              {uploadError && <p className="text-[10px] text-destructive mt-1">{uploadError}</p>}
             </div>
           </div>
 
-          {/* Image Preview if uploaded */}
+          {/* Image Preview */}
           {imageUrl && (
-            <div className="relative h-32 w-full rounded-2xl border border-border overflow-hidden bg-muted/40">
+            <div className="relative aspect-16/10 w-full rounded-md border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-neutral-50 dark:bg-neutral-900">
               <img src={imageUrl} alt="Preview" className="h-full w-full object-cover" />
               <button
                 type="button"
                 onClick={() => setImageUrl('')}
-                className="absolute top-2 right-2 rounded-full bg-background/80 p-1 text-foreground hover:bg-background"
+                className="absolute top-2 right-2 rounded-md bg-background/80 p-1 text-foreground hover:bg-background border border-neutral-200 dark:border-neutral-800"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
           )}
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1.5">
               Notes & Special Instructions
             </label>
             <textarea
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Serial number, extended warranty details, claim instructions..."
-              className="w-full px-3.5 py-2 rounded-xl bg-background border border-border text-sm text-foreground focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+              placeholder="Serial numbers, claim links, return codes..."
+              className="w-full px-3 py-2 rounded-md bg-card border border-neutral-200 dark:border-neutral-800 text-xs text-foreground focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-colors"
             />
           </div>
 
-          {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+          {/* Form Actions */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-accent transition-colors"
+              className="px-4 py-1.5 rounded-md border border-neutral-200 dark:border-neutral-800 text-xs font-semibold text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !name.trim()}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-sm font-medium text-white shadow-md hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 active:scale-[0.98] disabled:opacity-50 transition-all"
             >
               {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <CheckCircle2 className="h-4 w-4" />
+                <Check className="h-3.5 w-3.5" />
               )}
-              <span>{assetToEdit ? 'Save Changes' : 'Create Asset'}</span>
+              <span>{assetToEdit ? 'Save changes' : 'Create Asset'}</span>
             </button>
           </div>
         </form>

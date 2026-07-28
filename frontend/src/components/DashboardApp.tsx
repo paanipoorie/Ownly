@@ -156,7 +156,7 @@ const DashboardInner: React.FC<DashboardAppProps> = ({ initialTab = 'dashboard' 
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-background text-foreground selection:bg-neutral-800 dark:selection:bg-neutral-200 selection:text-white dark:selection:text-neutral-900">
       <Navbar
         user={user}
         activeTab={activeTab}
@@ -164,16 +164,16 @@ const DashboardInner: React.FC<DashboardAppProps> = ({ initialTab = 'dashboard' 
         onOpenAddModal={handleOpenAddModal}
       />
 
-      <main className="container mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         {loading ? (
           <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-800 dark:border-neutral-200 border-t-transparent" />
           </div>
         ) : (
           <>
             {activeTab === 'dashboard' && (
               <div>
-                <StatsBar assets={assets} loading={false} />
+                <StatsBar assets={assets} />
                 <FilterBar
                   filters={filters}
                   onFilterChange={setFilters}
@@ -186,32 +186,31 @@ const DashboardInner: React.FC<DashboardAppProps> = ({ initialTab = 'dashboard' 
                   onEdit={handleOpenEditModal}
                   onDelete={handleDeleteAsset}
                   onOpenAddModal={handleOpenAddModal}
-                  loading={false}
                 />
                 {assets.length === 0 && (
-                  <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border p-12 text-center my-8 bg-card/40">
-                    <Database className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                    <h3 className="text-lg font-bold text-foreground">Get Started with Demo Data</h3>
-                    <p className="text-sm text-muted-foreground max-w-sm mt-1">
-                      Populate your account with sample assets and import candidates to explore all features.
+                  <div className="flex flex-col items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 p-16 text-center my-6 bg-card">
+                    <h3 className="text-sm font-bold text-foreground">Explore Ownly with Demo Data</h3>
+                    <p className="mt-1.5 text-xs text-neutral-400 dark:text-neutral-500 max-w-xs leading-relaxed">
+                      Populate your catalog instantly with mock assets, import candidates, and active warranty countdowns.
                     </p>
                     <button
                       onClick={handleSeedDemo}
                       disabled={seeding}
-                      className="mt-6 flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all"
+                      className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold px-4 py-2 hover:opacity-90 active:scale-[0.98] transition-all"
                     >
                       {seeding ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
-                        <Database className="h-4 w-4" />
+                        null
                       )}
-                      <span>{seeding ? 'Loading Demo Data...' : 'Load Demo Data'}</span>
+                      <span>{seeding ? 'Loading Seeding Data...' : 'Seed Sample Catalog'}</span>
                     </button>
                   </div>
                 )}
               </div>
             )}
 
+            {/* Timeline Tab */}
             {activeTab === 'timeline' && (
               <TimelinePage
                 events={timelineEvents}

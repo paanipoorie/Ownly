@@ -1,7 +1,7 @@
 import React from 'react';
-import { ShieldCheck, ShieldAlert, ShieldX, RefreshCw, Tag, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit2, Trash2, Tag, Calendar, Shield } from 'lucide-react';
 import type { Asset } from '../lib/types';
-import { formatCurrency, getWarrantyStatus, getExchangeStatus } from '../lib/utils';
+import { formatCurrency, formatDate, getWarrantyStatus, getExchangeStatus } from '../lib/utils';
 
 interface AssetCardProps {
   asset: Asset;
@@ -20,123 +20,135 @@ export const AssetCard: React.FC<AssetCardProps> = ({
   const warranty = getWarrantyStatus(asset.warranty_expiry);
   const exchange = getExchangeStatus(asset.exchange_deadline);
 
+  const getWarrantyDotColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-emerald-500';
+      case 'expiring_soon':
+        return 'bg-amber-500 animate-pulse';
+      case 'expired':
+        return 'bg-neutral-300 dark:bg-neutral-700';
+      default:
+        return 'bg-transparent';
+    }
+  };
+
+  const getExchangeDotColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-indigo-500';
+      case 'expiring_soon':
+        return 'bg-purple-500 animate-pulse';
+      default:
+        return 'bg-transparent';
+    }
+  };
+
   return (
     <div
       onClick={() => onSelect(asset)}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/60 bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/5 cursor-pointer"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800 bg-card transition-all duration-200 hover:border-neutral-400 dark:hover:border-neutral-700 cursor-pointer shadow-3xs"
     >
-      {/* Top Image Preview & Badges */}
       <div>
-        <div className="relative mb-3 h-44 w-full overflow-hidden rounded-xl bg-muted/40">
+        {/* Aspect Ratio Box for Image */}
+        <div className="relative aspect-4/3 w-full bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 overflow-hidden">
           {asset.image_url ? (
             <img
               src={asset.image_url}
               alt={asset.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-300"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary/50 to-muted text-muted-foreground">
-              <Tag className="h-10 w-10 opacity-30" />
+            <div className="flex h-full w-full items-center justify-center text-neutral-300 dark:text-neutral-700">
+              <Tag className="h-8 w-8 stroke-[1.2]" />
             </div>
           )}
 
-          {/* Category Pill */}
-          <span className="absolute top-2.5 left-2.5 rounded-full bg-background/80 backdrop-blur-md px-2.5 py-1 text-xs font-semibold text-foreground border border-border/40 shadow-xs">
-            {asset.category || 'General'}
-          </span>
-
-          {/* Quick Options Menu Button */}
+          {/* Action Menu */}
           <div className="absolute top-2.5 right-2.5">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur-md hover:bg-background shadow-xs transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-md bg-background/90 text-foreground backdrop-blur-xs border border-neutral-200 dark:border-neutral-800 hover:bg-background transition-colors"
             >
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-3.5 w-3.5" />
             </button>
 
             {showMenu && (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="absolute right-0 mt-1 w-36 rounded-xl border border-border bg-popover p-1 shadow-lg backdrop-blur-md z-20"
+                className="absolute right-0 mt-1 w-32 rounded-md border border-neutral-200 dark:border-neutral-800 bg-popover p-1 shadow-md z-20"
               >
                 <button
                   onClick={() => {
                     setShowMenu(false);
                     onEdit(asset);
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-popover-foreground hover:bg-accent"
+                  className="flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-xs text-popover-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
-                  <Edit2 className="h-3.5 w-3.5" />
-                  Edit Item
+                  <Edit2 className="h-3 w-3" />
+                  Edit
                 </button>
                 <button
                   onClick={() => {
                     setShowMenu(false);
                     onDelete(asset);
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+                  className="flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/10 transition-colors"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Delete Item
+                  <Trash2 className="h-3 w-3" />
+                  Delete
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Title & Merchant */}
-        <div className="mb-2">
-          <h4 className="font-semibold text-foreground text-base line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+        {/* Info Area */}
+        <div className="p-4 space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] font-mono tracking-wider text-neutral-400 dark:text-neutral-500 uppercase">
+              {asset.category || 'Other'}
+            </span>
+            {asset.merchant && (
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate max-w-[120px]">
+                {asset.merchant}
+              </span>
+            )}
+          </div>
+
+          <h4 className="font-semibold text-foreground text-sm line-clamp-1 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
             {asset.name}
           </h4>
-          <p className="text-xs text-muted-foreground line-clamp-1">
-            {asset.merchant ? `Purchased from ${asset.merchant}` : 'No merchant info'}
-          </p>
         </div>
       </div>
 
-      {/* Price & Status Badges */}
-      <div>
-        <div className="flex items-baseline justify-between mb-3 pt-2 border-t border-border/40">
-          <span className="text-xs text-muted-foreground font-medium">Price</span>
-          <span className="text-base font-bold text-foreground">
+      {/* Footer Area */}
+      <div className="px-4 pb-4 pt-2 border-t border-neutral-100 dark:border-neutral-800/40">
+        <div className="flex items-baseline justify-between mb-3">
+          <span className="text-lg font-bold font-mono text-foreground">
             {formatCurrency(asset.purchase_price, asset.purchase_currency)}
           </span>
         </div>
 
-        {/* Status Indicators */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          {/* Warranty Badge */}
-          {warranty.status === 'active' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <ShieldCheck className="h-3 w-3" />
-              {warranty.label}
-            </span>
+        {/* Status Indicators (Dot and simple labels) */}
+        <div className="flex flex-col gap-1.5 text-[11px]">
+          {/* Warranty status indicator */}
+          {warranty.status !== 'none' && (
+            <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${getWarrantyDotColor(warranty.status)}`} />
+              <span className="truncate">{warranty.label}</span>
+            </div>
           )}
 
-          {warranty.status === 'expiring_soon' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 font-medium text-amber-600 dark:text-amber-400 border border-amber-500/20 animate-pulse">
-              <ShieldAlert className="h-3 w-3" />
-              {warranty.label}
-            </span>
-          )}
-
-          {warranty.status === 'expired' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-0.5 font-medium text-muted-foreground border border-border/40">
-              <ShieldX className="h-3 w-3" />
-              Warranty Expired
-            </span>
-          )}
-
-          {/* Exchange Badge */}
-          {(exchange.status === 'active' || exchange.status === 'expiring_soon') && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2.5 py-0.5 font-medium text-purple-600 dark:text-purple-400 border border-purple-500/20">
-              <RefreshCw className="h-3 w-3" />
-              {exchange.label}
-            </span>
+          {/* Exchange status indicator */}
+          {exchange.status !== 'none' && (
+            <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${getExchangeDotColor(exchange.status)}`} />
+              <span className="truncate">{exchange.label}</span>
+            </div>
           )}
         </div>
       </div>
