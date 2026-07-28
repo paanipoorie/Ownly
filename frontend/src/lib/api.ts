@@ -268,3 +268,127 @@ export async function uploadFile(file: File): Promise<{ url: string; filename: s
     filename: file.name,
   };
 }
+
+let localCandidates: any[] = [
+  {
+    id: 'cand-1',
+    user_id: 'demo-user',
+    gmail_message_id: 'msg-amz-8812',
+    sender: 'auto-confirm@amazon.in',
+    subject: 'Your Amazon.in order #408-7712941-0091221 for Sony Bravia 55" 4K TV',
+    snippet: 'Thank you for shopping with Amazon.in. Your order details: Sony Bravia 55" 4K Ultra HD Smart TV for ₹59,990.00.',
+    parsed_data: JSON.stringify({
+      name: 'Sony Bravia 55" 4K Ultra HD Smart TV',
+      merchant: 'Amazon',
+      category: 'Electronics',
+      invoice_number: '408-7712941-0091221',
+      purchase_price: 59990,
+      purchase_currency: 'INR',
+      purchase_date: new Date().toISOString().split('T')[0],
+      description: 'Imported from Amazon Order Email',
+    }),
+    status: 'pending',
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'cand-2',
+    user_id: 'demo-user',
+    gmail_message_id: 'msg-fk-9902',
+    sender: 'orders@flipkart.com',
+    subject: 'Order Confirmed: Noise ColorFit Pro 4 Smartwatch',
+    snippet: 'Your Flipkart Tax Invoice for Noise ColorFit Pro 4 Smartwatch. Total Amount: ₹2,499.00.',
+    parsed_data: JSON.stringify({
+      name: 'Noise ColorFit Pro 4 Smartwatch',
+      merchant: 'Flipkart',
+      category: 'Electronics',
+      invoice_number: 'FK-990241',
+      purchase_price: 2499,
+      purchase_currency: 'INR',
+      purchase_date: new Date().toISOString().split('T')[0],
+      description: 'Imported from Flipkart Invoice',
+    }),
+    status: 'pending',
+    created_at: new Date().toISOString(),
+  },
+];
+
+export async function fetchImportCandidates(): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_BASE}/imports`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch {
+    // fallback
+  }
+  return localCandidates.filter((c) => c.status === 'pending');
+}
+
+export async function scanGmailInbox(): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_BASE}/imports/scan`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch {
+    // fallback
+  }
+  return localCandidates.filter((c) => c.status === 'pending');
+}
+
+export async function confirmCandidate(id: string): Promise<Asset | null> {
+  try {
+    const res = await fetch(`${API_BASE}/imports/${id}/confirm`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch {
+    // fallback
+  }
+
+  const found = localCandidates.find((c) => c.id === id);
+  if (found) {
+    found.status = 'confirmed';
+    const parsed = JSON.parse(found.parsed_data);
+    return createAsset({
+      name: parsed.name,
+      description: parsed.description,
+      category: parsed.category || 'Electronics',
+      merchant: parsed.merchant,
+      invoice_number: parsed.invoice_number,
+      purchase_price: parsed.purchase_price,
+      purchase_currency: parsed.purchase_currency || 'INR',
+      purchase_date: parsed.purchase_date,
+      warranty_expiry: new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0],
+      exchange_deadline: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+      notes: `Imported via Gmail candidate (${found.gmail_message_id})`,
+    });
+  }
+  return null;
+}
+
+export async function ignoreCandidate(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/imports/${id}/ignore`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (res.ok) return true;
+  } catch {
+    // fallback
+  }
+
+  const found = localCandidates.find((c) => c.id === id);
+  if (found) {
+    found.status = 'ignored';
+  }
+  return true;
+}

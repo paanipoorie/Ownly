@@ -38,6 +38,18 @@ export interface TimelineEvent {
   created_at?: string;
 }
 
+export interface ImportCandidate {
+  id: string;
+  user_id: string;
+  gmail_message_id: string;
+  sender: string;
+  subject: string;
+  snippet: string;
+  parsed_data: string; // JSON string
+  status: 'pending' | 'confirmed' | 'ignored';
+  created_at?: string;
+}
+
 export type WarrantyStatus = 'active' | 'expiring_soon' | 'expired' | 'none';
 export type ExchangeStatus = 'active' | 'expiring_soon' | 'expired' | 'none';
 

@@ -15,6 +15,7 @@ import { AssetGrid } from './AssetGrid';
 import { AssetDetailDrawer } from './AssetDetailDrawer';
 import { AssetFormModal } from './AssetFormModal';
 import { TimelinePage } from './TimelinePage';
+import { ImportsPage } from './ImportsPage';
 import { Inbox, Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
 
 const CATEGORIES = [
@@ -174,28 +175,9 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
               />
             )}
 
-            {/* Imports Tab (Smart Imports Module Preview) */}
+            {/* Imports Tab (Gmail Smart Imports) */}
             {activeTab === 'imports' && (
-              <div className="max-w-2xl mx-auto py-8">
-                <div className="rounded-3xl border border-border/80 bg-card p-8 text-center shadow-md">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mb-4">
-                    <Inbox className="h-8 w-8" />
-                  </div>
-                  <h2 className="text-xl font-bold text-foreground">Gmail Purchase Importer</h2>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                    Connect your Gmail account to automatically scan for purchase receipts, order confirmation emails, and invoice attachments from Amazon, Flipkart, Apple, and more.
-                  </p>
-                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <a
-                      href="http://localhost:3000/api/auth/login"
-                      className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:brightness-110 transition-all"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      <span>Connect Gmail Account</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <ImportsPage onCandidateConfirmed={reloadData} />
             )}
 
             {/* Settings Tab */}

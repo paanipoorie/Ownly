@@ -87,8 +87,14 @@ Status: **Complete**
 
 ## Phase 8 --- Smart Import
 
-Deliverables: - Gmail integration - Parser registry - Import queue -
-Confirm/ignore flow
+Deliverables: - Gmail integration - Parser registry - Import queue - Confirm/ignore flow
+
+Status: **Complete**
+
+- Extensible `ParserRegistry` with dedicated parsers for Amazon, Flipkart, Apple Store, and generic purchase receipts.
+- Import candidate queue REST endpoints (`GET /api/imports`, `POST /api/imports/scan`, `POST /api/imports/:id/confirm`, `POST /api/imports/:id/ignore`).
+- Auto-creation of Assets, TimelineEvents, and Reminders upon candidate confirmation.
+- Interactive `ImportsPage` UI tab with inbox scanner, candidate cards, and instant Confirm/Ignore actions.
 
 ## Phase 9 --- Reminder Engine
 

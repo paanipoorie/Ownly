@@ -31,7 +31,7 @@ func main() {
 
 	authService := services.NewAuthService(userRepo, sessionRepo, cfg.SessionSecret)
 	assetService := services.NewAssetService(assetRepo, eventRepo, reminderRepo)
-	_ = services.NewImportService(candidateRepo)
+	importService := services.NewImportService(candidateRepo, assetService)
 	timelineService := services.NewTimelineService(eventRepo)
 	_ = services.NewReminderService(reminderRepo)
 	_ = services.NewStorageService()
@@ -42,6 +42,7 @@ func main() {
 	timelineHandler := handlers.NewTimelineHandler(timelineService)
 	uploadHandler := handlers.NewUploadHandler()
 	searchHandler := handlers.NewSearchHandler(searchService)
+	importHandler := handlers.NewImportHandler(importService)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -76,6 +77,12 @@ func main() {
 
 	timeline := api.Group("/timeline", middleware.AuthMiddleware(authService))
 	timeline.Get("/", timelineHandler.List)
+
+	imports := api.Group("/imports", middleware.AuthMiddleware(authService))
+	imports.Get("/", importHandler.List)
+	imports.Post("/scan", importHandler.Scan)
+	imports.Post("/:id/confirm", importHandler.Confirm)
+	imports.Post("/:id/ignore", importHandler.Ignore)
 
 	api.Get("/search", middleware.AuthMiddleware(authService), searchHandler.Search)
 	api.Post("/upload", middleware.AuthMiddleware(authService), uploadHandler.Upload)

@@ -5,38 +5,6 @@ import (
 	"github.com/paanipoorie/Ownly/internal/repositories"
 )
 
-type ImportService struct {
-	candidateRepo *repositories.ImportCandidateRepository
-}
-
-func NewImportService(candidateRepo *repositories.ImportCandidateRepository) *ImportService {
-	return &ImportService{candidateRepo: candidateRepo}
-}
-
-func (s *ImportService) GetCandidates(userID string) ([]models.ImportCandidate, error) {
-	id, err := parseUUID(userID)
-	if err != nil {
-		return nil, err
-	}
-	return s.candidateRepo.FindPendingByUserID(id)
-}
-
-func (s *ImportService) ConfirmCandidate(id string) error {
-	uid, err := parseUUID(id)
-	if err != nil {
-		return err
-	}
-	return s.candidateRepo.UpdateStatus(uid, "confirmed")
-}
-
-func (s *ImportService) IgnoreCandidate(id string) error {
-	uid, err := parseUUID(id)
-	if err != nil {
-		return err
-	}
-	return s.candidateRepo.UpdateStatus(uid, "ignored")
-}
-
 type ReminderService struct {
 	reminderRepo *repositories.ReminderRepository
 }
