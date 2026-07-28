@@ -99,6 +99,37 @@ export async function fetchAssets(): Promise<Asset[]> {
   return [...localAssets];
 }
 
+export async function searchAssets(query: string, category?: string): Promise<Asset[]> {
+  try {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    if (category) params.append('category', category);
+
+    const res = await fetch(`${API_BASE}/search?${params.toString()}`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch {
+    // fallback
+  }
+
+  return localAssets.filter((item) => {
+    if (query) {
+      const q = query.toLowerCase();
+      const match =
+        item.name?.toLowerCase().includes(q) ||
+        item.merchant?.toLowerCase().includes(q) ||
+        item.invoice_number?.toLowerCase().includes(q) ||
+        item.notes?.toLowerCase().includes(q) ||
+        item.category?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    if (category && category !== 'all' && item.category !== category) return false;
+    return true;
+  });
+}
+
 export async function createAsset(asset: Omit<Asset, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Asset> {
   try {
     const res = await fetch(`${API_BASE}/assets`, {

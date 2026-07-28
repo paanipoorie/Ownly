@@ -80,6 +80,11 @@ Status: **Complete**
 
 Deliverables: - Full-text search - Filters
 
+Status: **Complete**
+
+- Multi-field pattern & text search API (`GET /api/search?q=query&category=...`) searching asset name, merchant, invoice number, category, description, and notes.
+- Frontend search integration with instant query parameter binding and fallback local search.
+
 ## Phase 8 --- Smart Import
 
 Deliverables: - Gmail integration - Parser registry - Import queue -

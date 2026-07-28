@@ -35,12 +35,13 @@ func main() {
 	timelineService := services.NewTimelineService(eventRepo)
 	_ = services.NewReminderService(reminderRepo)
 	_ = services.NewStorageService()
-	_ = services.NewSearchService()
+	searchService := services.NewSearchService(assetRepo)
 
 	authHandler := handlers.NewAuthHandler(authService, cfg.GoogleClientID, cfg.GoogleSecret, cfg.GoogleRedirect)
 	assetHandler := handlers.NewAssetHandler(assetService)
 	timelineHandler := handlers.NewTimelineHandler(timelineService)
 	uploadHandler := handlers.NewUploadHandler()
+	searchHandler := handlers.NewSearchHandler(searchService)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -76,6 +77,7 @@ func main() {
 	timeline := api.Group("/timeline", middleware.AuthMiddleware(authService))
 	timeline.Get("/", timelineHandler.List)
 
+	api.Get("/search", middleware.AuthMiddleware(authService), searchHandler.Search)
 	api.Post("/upload", middleware.AuthMiddleware(authService), uploadHandler.Upload)
 
 	api.Get("/health", func(c *fiber.Ctx) error {

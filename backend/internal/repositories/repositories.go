@@ -128,6 +128,26 @@ func (r *AssetRepository) DeleteByIDAndUserID(id uuid.UUID, userID uuid.UUID) er
 	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Asset{}).Error
 }
 
+func (r *AssetRepository) Search(userID uuid.UUID, query string, category string) ([]models.Asset, error) {
+	var assets []models.Asset
+	db := r.db.Where("user_id = ?", userID)
+
+	if query != "" {
+		pattern := "%" + query + "%"
+		db = db.Where(
+			"name ILIKE ? OR merchant ILIKE ? OR invoice_number ILIKE ? OR notes ILIKE ? OR description ILIKE ? OR category ILIKE ?",
+			pattern, pattern, pattern, pattern, pattern, pattern,
+		)
+	}
+
+	if category != "" && category != "all" {
+		db = db.Where("category = ?", category)
+	}
+
+	err := db.Order("created_at DESC").Find(&assets).Error
+	return assets, err
+}
+
 type ImportCandidateRepository struct {
 	db *gorm.DB
 }

@@ -79,8 +79,18 @@ func NewStorageService() *StorageService {
 	return &StorageService{}
 }
 
-type SearchService struct{}
+type SearchService struct {
+	assetRepo *repositories.AssetRepository
+}
 
-func NewSearchService() *SearchService {
-	return &SearchService{}
+func NewSearchService(assetRepo *repositories.AssetRepository) *SearchService {
+	return &SearchService{assetRepo: assetRepo}
+}
+
+func (s *SearchService) Search(userID string, query string, category string) ([]models.Asset, error) {
+	uid, err := parseUUID(userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.assetRepo.Search(uid, query, category)
 }
