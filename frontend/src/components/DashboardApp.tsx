@@ -173,7 +173,7 @@ const DashboardInner: React.FC<DashboardAppProps> = ({ initialTab = 'dashboard' 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {loading ? (
           <div className="flex flex-col h-64 items-center justify-center gap-3">
-            <img src="/favicon.svg" alt="Ownly" className="h-8 w-8 animate-pulse opacity-85" />
+            <img src="/logo.png" alt="Ownly" className="h-8 w-auto object-contain animate-pulse opacity-85 dark:invert" />
             <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500">Loading Ownly...</span>
           </div>
         ) : (

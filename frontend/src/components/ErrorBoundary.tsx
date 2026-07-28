@@ -28,7 +28,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-[40vh] p-12 text-center bg-card rounded-lg border border-neutral-200 dark:border-neutral-800 my-6">
-          <img src="/favicon.svg" alt="Ownly" className="h-10 w-10 mb-4 opacity-80" />
+          <img src="/logo.png" alt="Ownly" className="h-10 w-auto object-contain mb-4 opacity-80 dark:invert" />
           <h2 className="text-sm font-bold text-foreground">Something went wrong</h2>
           <p className="mt-1.5 text-xs text-neutral-400 dark:text-neutral-500 max-w-xs leading-relaxed">
             An unexpected error occurred. Please try refreshing the page.

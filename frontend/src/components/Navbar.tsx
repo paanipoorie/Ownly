@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="/"
             className="flex items-center gap-2 text-sm font-bold tracking-tight text-foreground"
           >
-            <img src="/favicon.svg" alt="Ownly" className="h-4.5 w-4.5 rounded-sm" />
+            <img src="/logo-nav.png" alt="Ownly" className="h-5 w-auto object-contain dark:invert" />
             <span>Ownly</span>
           </a>
 

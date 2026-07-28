@@ -85,7 +85,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
   if (sorted.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-neutral-200 dark:border-neutral-800 p-16 text-center my-6 bg-card">
-        <img src="/favicon.svg" alt="Ownly" className="h-10 w-10 mb-4 opacity-80" />
+        <img src="/logo.png" alt="Ownly" className="h-10 w-auto object-contain mb-4 opacity-80 dark:invert" />
         <h3 className="text-sm font-bold text-foreground">
           {assets.length === 0 ? 'No Assets Yet' : 'No assets found'}
         </h3>
