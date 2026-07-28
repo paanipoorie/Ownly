@@ -5,26 +5,6 @@ import (
 	"github.com/paanipoorie/Ownly/internal/repositories"
 )
 
-type ReminderService struct {
-	reminderRepo *repositories.ReminderRepository
-}
-
-func NewReminderService(reminderRepo *repositories.ReminderRepository) *ReminderService {
-	return &ReminderService{reminderRepo: reminderRepo}
-}
-
-func (s *ReminderService) GetDue() ([]models.Reminder, error) {
-	return s.reminderRepo.FindDue()
-}
-
-func (s *ReminderService) MarkSent(id string) error {
-	uid, err := parseUUID(id)
-	if err != nil {
-		return err
-	}
-	return s.reminderRepo.MarkSent(uid)
-}
-
 type TimelineService struct {
 	eventRepo *repositories.TimelineEventRepository
 }

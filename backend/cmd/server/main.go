@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -29,11 +30,14 @@ func main() {
 	eventRepo := repositories.NewTimelineEventRepository(db)
 	reminderRepo := repositories.NewReminderRepository(db)
 
+	emailService := services.NewEmailService()
+	reminderService := services.NewReminderService(reminderRepo, assetRepo, emailService)
+	reminderService.StartScheduler(1 * time.Hour)
+
 	authService := services.NewAuthService(userRepo, sessionRepo, cfg.SessionSecret)
 	assetService := services.NewAssetService(assetRepo, eventRepo, reminderRepo)
 	importService := services.NewImportService(candidateRepo, assetService)
 	timelineService := services.NewTimelineService(eventRepo)
-	_ = services.NewReminderService(reminderRepo)
 	_ = services.NewStorageService()
 	searchService := services.NewSearchService(assetRepo)
 
@@ -43,6 +47,7 @@ func main() {
 	uploadHandler := handlers.NewUploadHandler()
 	searchHandler := handlers.NewSearchHandler(searchService)
 	importHandler := handlers.NewImportHandler(importService)
+	reminderHandler := handlers.NewReminderHandler(reminderService)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -83,6 +88,10 @@ func main() {
 	imports.Post("/scan", importHandler.Scan)
 	imports.Post("/:id/confirm", importHandler.Confirm)
 	imports.Post("/:id/ignore", importHandler.Ignore)
+
+	reminders := api.Group("/reminders", middleware.AuthMiddleware(authService))
+	reminders.Get("/", reminderHandler.List)
+	reminders.Post("/process", reminderHandler.Process)
 
 	api.Get("/search", middleware.AuthMiddleware(authService), searchHandler.Search)
 	api.Post("/upload", middleware.AuthMiddleware(authService), uploadHandler.Upload)

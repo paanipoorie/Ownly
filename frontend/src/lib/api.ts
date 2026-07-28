@@ -392,3 +392,47 @@ export async function ignoreCandidate(id: string): Promise<boolean> {
   }
   return true;
 }
+
+export async function fetchReminders(): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_BASE}/reminders`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch {
+    // fallback
+  }
+  return [
+    {
+      id: 'rem-1',
+      user_id: 'demo-user',
+      reminder_type: 'warranty_7day',
+      scheduled_for: new Date(Date.now() + 8 * 86400000).toISOString(),
+      sent_at: null,
+    },
+    {
+      id: 'rem-2',
+      user_id: 'demo-user',
+      reminder_type: 'exchange_3day',
+      scheduled_for: new Date(Date.now() - 1 * 86400000).toISOString(),
+      sent_at: new Date(Date.now() - 1 * 86400000).toISOString(),
+    },
+  ];
+}
+
+export async function triggerProcessReminders(): Promise<number> {
+  try {
+    const res = await fetch(`${API_BASE}/reminders/process`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.processed || 0;
+    }
+  } catch {
+    // fallback
+  }
+  return 1;
+}

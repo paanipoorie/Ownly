@@ -16,6 +16,7 @@ import { AssetDetailDrawer } from './AssetDetailDrawer';
 import { AssetFormModal } from './AssetFormModal';
 import { TimelinePage } from './TimelinePage';
 import { ImportsPage } from './ImportsPage';
+import { SettingsPage } from './SettingsPage';
 import { Inbox, Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
 
 const CATEGORIES = [
@@ -181,31 +182,7 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
             )}
 
             {/* Settings Tab */}
-            {activeTab === 'settings' && (
-              <div className="max-w-xl mx-auto py-8">
-                <div className="rounded-3xl border border-border bg-card p-6 shadow-md">
-                  <h2 className="text-lg font-bold text-foreground mb-4">Account & Preference Settings</h2>
-                  <div className="space-y-4 text-sm">
-                    <div className="flex items-center justify-between py-3 border-b border-border">
-                      <span className="text-muted-foreground">User Status</span>
-                      <span className="font-semibold text-foreground">
-                        {user ? user.email : 'Demo Guest User'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between py-3 border-b border-border">
-                      <span className="text-muted-foreground">Default Currency</span>
-                      <span className="font-semibold text-foreground">INR (₹)</span>
-                    </div>
-                    <div className="flex items-center justify-between py-3 border-b border-border">
-                      <span className="text-muted-foreground">Backend API Status</span>
-                      <span className="inline-flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" /> Connected (:3000)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === 'settings' && <SettingsPage user={user} />}
           </>
         )}
       </main>

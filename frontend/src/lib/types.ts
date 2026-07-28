@@ -50,6 +50,17 @@ export interface ImportCandidate {
   created_at?: string;
 }
 
+export interface Reminder {
+  id: string;
+  user_id: string;
+  asset_id?: string;
+  asset?: Asset;
+  reminder_type: string;
+  scheduled_for: string;
+  sent_at?: string;
+  created_at?: string;
+}
+
 export type WarrantyStatus = 'active' | 'expiring_soon' | 'expired' | 'none';
 export type ExchangeStatus = 'active' | 'expiring_soon' | 'expired' | 'none';
 

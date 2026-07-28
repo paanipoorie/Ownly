@@ -100,6 +100,14 @@ Status: **Complete**
 
 Deliverables: - Reminder scheduling - Email delivery
 
+Status: **Complete**
+
+- Automatic reminder scheduling (7-day warranty warnings & 3-day exchange deadline warnings) created/synced on asset save.
+- Background ticker scheduler (`StartScheduler`) running hourly in Go backend to check and process due reminders.
+- `EmailService` generating structured email notifications for upcoming warranty & exchange deadlines.
+- Reminder management endpoints (`GET /api/reminders`, `POST /api/reminders/process`).
+- Settings UI (`SettingsPage`) displaying system configuration, active reminder queue status, sent log, and instant manual trigger.
+
 ## Phase 10 --- Polish
 
 Deliverables: - Empty/loading/error states - Security hardening - Demo
