@@ -45,15 +45,36 @@ Deliverables: - Asset CRUD - Timeline events - File uploads
 
 Acceptance: - Manual asset lifecycle complete.
 
+Status: **Complete**
+
+- Asset REST CRUD endpoints (`/api/assets`) with strict user-scoping.
+- Automatic creation & synchronization of `TimelineEvent`s (purchase, warranty, exchange) and `Reminder`s upon asset create, update, and delete.
+- File and image upload endpoint (`POST /api/upload`) supporting images & PDFs with static file serving (`/uploads/...`).
+- Interactive Add/Edit Asset modal with live photo upload preview.
+
 ## Phase 5 --- Dashboard
 
 Deliverables: - Product grid - Drawer - Filters
 
 Acceptance: - Dashboard functional.
 
+Status: **Complete**
+
+- Dynamic portfolio stats bar (Total assets, Total value, Active warranties, Active exchange windows).
+- Product card grid displaying thumbnail, category pill, merchant, formatted currency, active warranty badge, and exchange badge.
+- Interactive side drawer (`AssetDetailDrawer`) displaying complete item specifications, purchase history, timeline events, and warranty countdowns.
+- Universal instant search, category filtering, warranty status filtering, and multi-criteria sorting.
+
 ## Phase 6 --- Timeline
 
 Deliverables: - Timeline API - Timeline UI
+
+Status: **Complete**
+
+- User-scoped Timeline REST API endpoint (`GET /api/timeline`) with preloaded asset data.
+- Dedicated Timeline UI view (`/timeline`) with chronological feed grouped by Month & Year.
+- Color-coded event nodes for Purchases, Warranties, and Exchange Deadlines.
+- Interactive filter tabs (All, Purchases, Warranties, Exchanges) with deep-linking to asset detail drawers.
 
 ## Phase 7 --- Search
 

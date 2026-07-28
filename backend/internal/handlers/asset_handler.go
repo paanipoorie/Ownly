@@ -24,7 +24,8 @@ func (h *AssetHandler) List(c *fiber.Ctx) error {
 }
 
 func (h *AssetHandler) Get(c *fiber.Ctx) error {
-	asset, err := h.assetService.GetByID(c.Params("id"))
+	user := c.Locals("user").(*models.User)
+	asset, err := h.assetService.GetByID(c.Params("id"), user.ID.String())
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "asset not found"})
 	}
@@ -45,21 +46,24 @@ func (h *AssetHandler) Create(c *fiber.Ctx) error {
 }
 
 func (h *AssetHandler) Update(c *fiber.Ctx) error {
-	asset, err := h.assetService.GetByID(c.Params("id"))
+	user := c.Locals("user").(*models.User)
+	existing, err := h.assetService.GetByID(c.Params("id"), user.ID.String())
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "asset not found"})
 	}
-	if err := c.BodyParser(asset); err != nil {
+	if err := c.BodyParser(existing); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
-	if err := h.assetService.Update(asset); err != nil {
+	existing.UserID = user.ID
+	if err := h.assetService.Update(existing); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update asset"})
 	}
-	return c.JSON(asset)
+	return c.JSON(existing)
 }
 
 func (h *AssetHandler) Delete(c *fiber.Ctx) error {
-	if err := h.assetService.Delete(c.Params("id")); err != nil {
+	user := c.Locals("user").(*models.User)
+	if err := h.assetService.Delete(c.Params("id"), user.ID.String()); err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "asset not found"})
 	}
 	return c.JSON(fiber.Map{"ok": true})

@@ -101,6 +101,15 @@ func (r *AssetRepository) FindByID(id uuid.UUID) (*models.Asset, error) {
 	return &asset, nil
 }
 
+func (r *AssetRepository) FindByIDAndUserID(id uuid.UUID, userID uuid.UUID) (*models.Asset, error) {
+	var asset models.Asset
+	err := r.db.Where("id = ? AND user_id = ?", id, userID).First(&asset).Error
+	if err != nil {
+		return nil, err
+	}
+	return &asset, nil
+}
+
 func (r *AssetRepository) FindByUserID(userID uuid.UUID) ([]models.Asset, error) {
 	var assets []models.Asset
 	err := r.db.Where("user_id = ?", userID).Order("created_at DESC").Find(&assets).Error
@@ -113,6 +122,10 @@ func (r *AssetRepository) Update(asset *models.Asset) error {
 
 func (r *AssetRepository) Delete(id uuid.UUID) error {
 	return r.db.Delete(&models.Asset{}, "id = ?", id).Error
+}
+
+func (r *AssetRepository) DeleteByIDAndUserID(id uuid.UUID, userID uuid.UUID) error {
+	return r.db.Where("id = ? AND user_id = ?", id, userID).Delete(&models.Asset{}).Error
 }
 
 type ImportCandidateRepository struct {
@@ -162,7 +175,7 @@ func (r *TimelineEventRepository) Create(event *models.TimelineEvent) error {
 
 func (r *TimelineEventRepository) FindByUserID(userID uuid.UUID) ([]models.TimelineEvent, error) {
 	var events []models.TimelineEvent
-	err := r.db.Where("user_id = ?", userID).
+	err := r.db.Preload("Asset").Where("user_id = ?", userID).
 		Order("event_date DESC, created_at DESC").Find(&events).Error
 	return events, err
 }
