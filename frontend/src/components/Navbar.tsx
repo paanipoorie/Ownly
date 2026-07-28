@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, LogIn, LogOut, Plus } from 'lucide-react';
+import { LogIn, LogOut, Plus } from 'lucide-react';
 import type { User } from '../lib/types';
 
 interface NavbarProps {
@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="/"
             className="flex items-center gap-2 text-sm font-bold tracking-tight text-foreground"
           >
-            <ShieldCheck className="h-4.5 w-4.5 text-foreground" />
+            <img src="/favicon.svg" alt="Ownly" className="h-4.5 w-4.5 rounded-sm" />
             <span>Ownly</span>
           </a>
 

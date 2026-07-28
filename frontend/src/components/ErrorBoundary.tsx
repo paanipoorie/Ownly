@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -27,19 +27,17 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] p-12 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-500 mb-4">
-            <AlertTriangle className="h-8 w-8" />
-          </div>
-          <h2 className="text-xl font-bold text-foreground">Something went wrong</h2>
-          <p className="mt-2 text-sm text-muted-foreground max-w-md">
+        <div className="flex flex-col items-center justify-center min-h-[40vh] p-12 text-center bg-card rounded-lg border border-neutral-200 dark:border-neutral-800 my-6">
+          <img src="/favicon.svg" alt="Ownly" className="h-10 w-10 mb-4 opacity-80" />
+          <h2 className="text-sm font-bold text-foreground">Something went wrong</h2>
+          <p className="mt-1.5 text-xs text-neutral-400 dark:text-neutral-500 max-w-xs leading-relaxed">
             An unexpected error occurred. Please try refreshing the page.
           </p>
           <button
             onClick={this.handleReset}
-            className="mt-6 flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:brightness-110 active:scale-95 transition-all"
+            className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold px-4 py-2 hover:opacity-90 active:scale-[0.98] transition-all"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-3.5 w-3.5" />
             Try Again
           </button>
         </div>

@@ -63,6 +63,12 @@ const DashboardInner: React.FC<DashboardAppProps> = ({ initialTab = 'dashboard' 
   const [assetToEdit, setAssetToEdit] = useState<Asset | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
+  // Sync document title with active tab
+  useEffect(() => {
+    const formattedTab = activeTab === 'imports' ? 'Imports' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1);
+    document.title = `${formattedTab} | Ownly`;
+  }, [activeTab]);
+
   // Set up global error handler
   useEffect(() => {
     setGlobalErrorHandler((error) => {
@@ -166,8 +172,9 @@ const DashboardInner: React.FC<DashboardAppProps> = ({ initialTab = 'dashboard' 
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {loading ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-800 dark:border-neutral-200 border-t-transparent" />
+          <div className="flex flex-col h-64 items-center justify-center gap-3">
+            <img src="/favicon.svg" alt="Ownly" className="h-8 w-8 animate-pulse opacity-85" />
+            <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500">Loading Ownly...</span>
           </div>
         ) : (
           <>
