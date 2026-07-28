@@ -1,0 +1,20 @@
+{
+  "name": "Ownly - Personal Ownership Hub",
+  "short_name": "Ownly",
+  "icons": [
+    {
+      "src": "/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#171717",
+  "background_color": "#090909",
+  "display": "standalone",
+  "start_url": "/"
+}
